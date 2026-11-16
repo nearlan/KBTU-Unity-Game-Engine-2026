@@ -9,6 +9,8 @@ namespace KBTU.Enemies
     {
         [SerializeField] private string targetTag = "Player";
         [SerializeField] private DamageFlash damageFlash;
+        [SerializeField] private EnemyAudio enemyAudio;
+        [SerializeField, Min(0f)] private float hitKnockback = 4.5f;
         [SerializeField, Min(0f)] private float deathImpulse = 60f;
 
         private EnemyChaser chaser;
@@ -21,6 +23,9 @@ namespace KBTU.Enemies
             chaser = GetComponent<EnemyChaser>();
             attack = GetComponent<EnemyAttack>();
             ragdoll = GetComponent<Ragdoll>();
+
+            if (enemyAudio == null)
+                enemyAudio = GetComponent<EnemyAudio>();
         }
 
         private void Start()
@@ -37,12 +42,22 @@ namespace KBTU.Enemies
         {
             if (damageFlash != null)
                 damageFlash.Flash();
+
+            if (enemyAudio != null)
+                enemyAudio.PlayDamage();
+
+            if (hitKnockback > 0f)
+                chaser.ApplyKnockback(damage.Direction * hitKnockback);
         }
 
         protected override void Die(DamageInfo killingBlow)
         {
             chaser.Stop();
             attack.enabled = false;
+
+            if (enemyAudio != null)
+                enemyAudio.PlayDeath();
+
             ragdoll.Activate(killingBlow.Direction * deathImpulse, killingBlow.Point);
         }
     }
