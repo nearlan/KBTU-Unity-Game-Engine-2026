@@ -5,6 +5,9 @@ namespace KBTU.Enemies
     public class Ragdoll : MonoBehaviour
     {
         [SerializeField] private Rigidbody[] bodies;
+        [SerializeField, Min(0f)] private float upwardLift = 0.35f;
+        [SerializeField, Min(0f)] private float torqueImpulse = 8f;
+        [SerializeField, Range(0f, 1f)] private float secondaryBodyRatio = 0.25f;
 
         public bool IsActive { get; private set; }
 
@@ -21,17 +24,35 @@ namespace KBTU.Enemies
             IsActive = true;
             SetSimulated(true);
 
+            Vector3 liftedImpulse = impulse + Vector3.up * (impulse.magnitude * upwardLift);
             Rigidbody closest = FindClosestBody(point);
             if (closest != null)
-                closest.AddForceAtPosition(impulse, point, ForceMode.Impulse);
+            {
+                closest.AddForceAtPosition(liftedImpulse, point, ForceMode.Impulse);
+                closest.AddTorque(Random.insideUnitSphere * torqueImpulse, ForceMode.Impulse);
+            }
+
+            if (secondaryBodyRatio <= 0f)
+                return;
+
+            Vector3 secondaryImpulse = liftedImpulse * secondaryBodyRatio;
+            foreach (Rigidbody body in bodies)
+            {
+                if (body != null && body != closest)
+                    body.AddForce(secondaryImpulse, ForceMode.Impulse);
+            }
         }
 
         private void SetSimulated(bool simulated)
         {
             foreach (Rigidbody body in bodies)
             {
+                if (body == null)
+                    continue;
+
                 body.isKinematic = !simulated;
                 body.interpolation = simulated ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
+                body.collisionDetectionMode = simulated ? CollisionDetectionMode.ContinuousDynamic : CollisionDetectionMode.Discrete;
             }
         }
 
