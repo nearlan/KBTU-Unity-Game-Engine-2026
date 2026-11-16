@@ -1,0 +1,45 @@
+using System;
+using UnityEngine;
+
+namespace KBTU.Core
+{
+    public abstract class Entity : MonoBehaviour, IDamageable
+    {
+        [SerializeField, Min(1f)] private float maxHealth = 100f;
+
+        public event Action<Entity, DamageInfo> Damaged;
+        public event Action<Entity> Died;
+
+        public float MaxHealth => maxHealth;
+        public float CurrentHealth { get; private set; }
+        public bool IsDead { get; private set; }
+
+        protected virtual void Awake()
+        {
+            CurrentHealth = maxHealth;
+        }
+
+        public void TakeDamage(DamageInfo damage)
+        {
+            if (IsDead || damage.Amount <= 0f)
+                return;
+
+            CurrentHealth = Mathf.Max(0f, CurrentHealth - damage.Amount);
+            OnDamaged(damage);
+            Damaged?.Invoke(this, damage);
+
+            if (CurrentHealth > 0f)
+                return;
+
+            IsDead = true;
+            Die(damage);
+            Died?.Invoke(this);
+        }
+
+        protected virtual void OnDamaged(DamageInfo damage)
+        {
+        }
+
+        protected abstract void Die(DamageInfo killingBlow);
+    }
+}
