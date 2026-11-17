@@ -149,6 +149,13 @@ namespace KBTU.Players
             if (!PhysicsQuery.SphereCast(AimRay, pickupRadius, pickupRange, pickupMask, transform, out RaycastHit hit))
                 return;
 
+            IInteractable interactable = hit.collider.GetComponentInParent<IInteractable>();
+            if (interactable != null)
+            {
+                interactable.Interact(gameObject);
+                return;
+            }
+
             Weapon weapon = hit.collider.GetComponentInParent<Weapon>();
             if (weapon == null || weapon.IsEquipped)
                 return;
