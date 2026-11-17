@@ -99,7 +99,7 @@ MeshCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 378131738586572853}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: b7d2e4a1c9084f56a1b2c3d4e5f60718, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -122,7 +122,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 378131738586572853}
   serializedVersion: 5
-  m_Mass: 10
+  m_Mass: 4
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -241,7 +241,7 @@ MeshCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1793220890439282566}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: b7d2e4a1c9084f56a1b2c3d4e5f60718, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -264,7 +264,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1793220890439282566}
   serializedVersion: 5
-  m_Mass: 10
+  m_Mass: 4
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -344,6 +344,8 @@ GameObject:
   - component: {fileID: 1455317035433022023}
   - component: {fileID: 7888433586187760304}
   - component: {fileID: 5536775032722029881}
+  - component: {fileID: 8200000000000000001}
+  - component: {fileID: 1140000000000000001}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -404,6 +406,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KBTU.Enemies.EnemyChaser
   repathInterval: 0.2
+  knockbackDamping: 10
+  maxKnockbackSpeed: 12
 --- !u!114 &6212125644150608512
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -435,6 +439,9 @@ MonoBehaviour:
   - {fileID: 6373499811737569256}
   - {fileID: 3810645839947035099}
   - {fileID: 2141666027140796107}
+  upwardLift: 0.35
+  torqueImpulse: 8
+  secondaryBodyRatio: 0.25
 --- !u!114 &7888433586187760304
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -469,7 +476,139 @@ MonoBehaviour:
   maxHealth: 100
   targetTag: Player
   damageFlash: {fileID: 7888433586187760304}
+  enemyAudio: {fileID: 1140000000000000001}
+  hitKnockback: 4.5
   deathImpulse: 60
+--- !u!82 &8200000000000000001
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6567674427956090540}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 2
+  MaxDistance: 25
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &1140000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6567674427956090540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8c4f1e29b304d7a9e1234567890abcd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KBTU.Enemies.EnemyAudio
+  idleClips:
+  - {fileID: 8300000, guid: e1000000000000000000000000000101, type: 3}
+  - {fileID: 8300000, guid: e1000000000000000000000000000102, type: 3}
+  - {fileID: 8300000, guid: e1000000000000000000000000000103, type: 3}
+  - {fileID: 8300000, guid: e1000000000000000000000000000104, type: 3}
+  damageClips:
+  - {fileID: 8300000, guid: e1000000000000000000000000000201, type: 3}
+  - {fileID: 8300000, guid: e1000000000000000000000000000202, type: 3}
+  - {fileID: 8300000, guid: e1000000000000000000000000000203, type: 3}
+  - {fileID: 8300000, guid: e1000000000000000000000000000204, type: 3}
+  deathClips:
+  - {fileID: 8300000, guid: e1000000000000000000000000000301, type: 3}
+  - {fileID: 8300000, guid: e1000000000000000000000000000302, type: 3}
+  - {fileID: 8300000, guid: e1000000000000000000000000000303, type: 3}
+  idleInterval: {x: 3, y: 8}
+  pitchRange: {x: 0.92, y: 1.08}
+  idleVolume: 0.6
+  damageVolume: 0.85
+  deathVolume: 1
+  minDistance: 2
+  maxDistance: 25
 --- !u!1 &7551931303241625449
 GameObject:
   m_ObjectHideFlags: 0
@@ -570,7 +709,7 @@ MeshCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7551931303241625449}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: b7d2e4a1c9084f56a1b2c3d4e5f60718, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -593,7 +732,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7551931303241625449}
   serializedVersion: 5
-  m_Mass: 10
+  m_Mass: 3
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
