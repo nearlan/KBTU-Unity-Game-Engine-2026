@@ -22,6 +22,7 @@ namespace RUSH.EditorTools
         private const string DamageClipPath = "Assets/Sounds/Impacts/S_WEP_Impact_Bullet_01.wav";
 
         private const string StatDialController = "AC_HUD_Apocalypse_Stat_Dial";
+        private const string DamageChipName = "Damage Chip";
 
         private static readonly (string Prefab, string Icon)[] WeaponIcons =
         {
@@ -157,6 +158,7 @@ namespace RUSH.EditorTools
             HealthBarView health = dial.gameObject.AddComponent<HealthBarView>();
             SetReference(health, "target", player);
             SetReference(health, "slider", healthSlider);
+            SetReference(health, "damageChip", BuildDamageChip(healthSlider));
 
             Animator[] statDials = dial.GetComponentsInChildren<Animator>(true)
                 .Where(a => a.runtimeAnimatorController != null && a.runtimeAnimatorController.name == StatDialController)
@@ -178,6 +180,27 @@ namespace RUSH.EditorTools
             StaminaDialView staminaView = dial.gameObject.AddComponent<StaminaDialView>();
             SetReference(staminaView, "stamina", stamina);
             SetReference(staminaView, "dialAnimator", staminaDial);
+        }
+
+        // A copy of the slider fill, drawn behind it, that HealthBarView stretches over the health just lost.
+        private static Image BuildDamageChip(Slider slider)
+        {
+            RectTransform fill = slider.fillRect;
+            if (fill == null)
+                throw new System.InvalidOperationException("Health slider has no fill rect");
+
+            Transform existing = fill.parent.Find(DamageChipName);
+            if (existing != null)
+                Object.DestroyImmediate(existing.gameObject);
+
+            GameObject chip = Object.Instantiate(fill.gameObject, fill.parent);
+            chip.name = DamageChipName;
+            chip.transform.SetSiblingIndex(fill.GetSiblingIndex());
+
+            Image image = chip.GetComponent<Image>();
+            image.raycastTarget = false;
+            image.enabled = false;
+            return image;
         }
 
         private static void BuildAmmo(Transform screen, PlayerWeaponHandler weaponHandler)
