@@ -21,6 +21,7 @@ namespace RUSH.UI
         [Header("References")]
         [SerializeField] private Player player;
         [SerializeField] private PlayerWeaponHandler weaponHandler;
+        [SerializeField] private PlayerStamina stamina;
         [SerializeField] private AudioSource audioSource;
 
         [Header("Health UI")]
@@ -52,9 +53,9 @@ namespace RUSH.UI
         [SerializeField] private float damageNumberRiseSpeed = 55f;
         [SerializeField] private Color damageNumberColor = new(1f, 0.88f, 0.35f, 1f);
 
-        [Header("Stamina UI (Placeholder)")]
+        [Header("Stamina UI")]
         [SerializeField] private Image staminaFillImage;
-        [SerializeField, Range(0f, 1f)] private float defaultStaminaNormalized = 1f;
+        [SerializeField] private Color exhaustedStaminaColor = new(0.92f, 0.25f, 0.22f, 1f);
 
         [Header("Ammunition UI")]
         [SerializeField] private Text ammoText;
@@ -79,6 +80,7 @@ namespace RUSH.UI
         private Sprite solidSprite;
         private Vector2 baseContainerPosition;
         private Vector3 baseContainerScale = Vector3.one;
+        private Color staminaColor = Color.white;
 
         private float targetHealthNormalized = 1f;
         private float shownHealthNormalized = 1f;
@@ -120,7 +122,7 @@ namespace RUSH.UI
                 if (useCrispRectSprites)
                     ApplySolidFill(staminaFillImage);
 
-                staminaFillImage.fillAmount = defaultStaminaNormalized;
+                staminaColor = staminaFillImage.color;
             }
         }
 
@@ -152,15 +154,19 @@ namespace RUSH.UI
         {
             UpdateJuicyHealthBar();
             UpdateFloatingNumbers();
+            UpdateStaminaUi();
             UpdateAmmoUi();
             UpdateDamageOverlay();
             UpdateGameOverScreen();
         }
 
-        public void SetStamina(float current, float max)
+        private void UpdateStaminaUi()
         {
-            if (staminaFillImage != null && max > 0f)
-                staminaFillImage.fillAmount = Mathf.Clamp01(current / max);
+            if (staminaFillImage == null || stamina == null)
+                return;
+
+            staminaFillImage.fillAmount = stamina.Normalized;
+            staminaFillImage.color = stamina.IsExhausted ? exhaustedStaminaColor : staminaColor;
         }
 
         private void SetupHealthBar()
