@@ -18,8 +18,16 @@ namespace RUSH.Players
         [SerializeField, Range(30f, 120f)] private float aimFieldOfView = 55f;
         [SerializeField, Min(0f)] private float fieldOfViewSpeed = 10f;
 
+        [Header("Recoil")]
+        [SerializeField, Min(0f)] private float recoilSnappiness = 25f;
+        [SerializeField, Min(0f)] private float recoilReturnSpeed = 6f;
+        [SerializeField, Min(0f)] private float recoilReturnDelay = 0.15f;
+
         private float pitch;
         private bool isAiming;
+        private Vector2 targetRecoil;
+        private Vector2 currentRecoil;
+        private float recoilReturnCooldown;
 
         public Camera ViewCamera => viewCamera;
 
@@ -40,20 +48,55 @@ namespace RUSH.Players
 
         private void Update()
         {
+            float deltaTime = Time.deltaTime;
             Vector2 delta = input.Look * sensitivity;
 
             transform.Rotate(0f, delta.x, 0f, Space.Self);
+            delta.y += AbsorbRecoilCompensation(delta.y);
             pitch = Mathf.Clamp(pitch - delta.y, pitchLimits.x, pitchLimits.y);
-            pitchPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+
+            UpdateRecoil(deltaTime);
+            float viewPitch = Mathf.Clamp(pitch - currentRecoil.x, pitchLimits.x, pitchLimits.y);
+            pitchPivot.localRotation = Quaternion.Euler(viewPitch, currentRecoil.y, 0f);
 
             float targetFieldOfView = isAiming ? aimFieldOfView : defaultFieldOfView;
-            float blend = 1f - Mathf.Exp(-fieldOfViewSpeed * Time.deltaTime);
+            float blend = 1f - Mathf.Exp(-fieldOfViewSpeed * deltaTime);
             viewCamera.fieldOfView = Mathf.Lerp(viewCamera.fieldOfView, targetFieldOfView, blend);
         }
 
         public void SetAiming(bool aiming)
         {
             isAiming = aiming;
+        }
+
+        public void AddRecoil(Vector2 kick)
+        {
+            targetRecoil += kick;
+            recoilReturnCooldown = recoilReturnDelay;
+        }
+
+        private void UpdateRecoil(float deltaTime)
+        {
+            if (recoilReturnCooldown > 0f)
+                recoilReturnCooldown -= deltaTime;
+            else
+                targetRecoil = Vector2.Lerp(targetRecoil, Vector2.zero, 1f - Mathf.Exp(-recoilReturnSpeed * deltaTime));
+
+            currentRecoil = Vector2.Lerp(currentRecoil, targetRecoil, 1f - Mathf.Exp(-recoilSnappiness * deltaTime));
+        }
+
+        // Pulling the mouse down against vertical recoil eats into the accumulated kick,
+        // so the later return does not drag the view below where the player compensated to.
+        // Returns the part of the vertical mouse delta consumed by the recoil.
+        private float AbsorbRecoilCompensation(float verticalDelta)
+        {
+            if (verticalDelta >= 0f || targetRecoil.x <= 0f)
+                return 0f;
+
+            float absorbed = Mathf.Min(-verticalDelta, targetRecoil.x);
+            targetRecoil.x -= absorbed;
+            currentRecoil.x -= absorbed;
+            return absorbed;
         }
 
         private static void SetCursorLocked(bool locked)

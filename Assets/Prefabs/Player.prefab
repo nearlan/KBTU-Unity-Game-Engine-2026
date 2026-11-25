@@ -234,6 +234,7 @@ GameObject:
   - component: {fileID: 2277084230587376940}
   - component: {fileID: 2778478750229958384}
   - component: {fileID: 1910971114000040163}
+  - component: {fileID: 6497957477005365924}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -407,6 +408,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RUSH.Players.PlayerMovement
   input: {fileID: 5964305835268616885}
+  stamina: {fileID: 6497957477005365924}
+  viewPivot: {fileID: 3555311849264208347}
   walkSpeed: 4
   sprintSpeed: 6.5
   aimSpeed: 2.5
@@ -491,6 +494,24 @@ MonoBehaviour:
   maxHealth: 100
   arms: {fileID: 4322126471223699682}
   restartDelay: 3
+--- !u!114 &6497957477005365924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 451600006900519649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b81d4e429a884cbbaf5a55ce3198dc4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Players.PlayerStamina
+  maxStamina: 100
+  sprintCostPerSecond: 20
+  jumpCost: 15
+  regenPerSecond: 25
+  regenDelay: 1
+  exhaustionRecoveryThreshold: 0.3
 --- !u!1 &491655107913692371
 GameObject:
   m_ObjectHideFlags: 0
@@ -3928,6 +3949,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RUSH.UI.PlayerHud
   player: {fileID: 1910971114000040163}
   weaponHandler: {fileID: 2778478750229958384}
+  stamina: {fileID: 6497957477005365924}
   audioSource: {fileID: 8084404925079707151}
   healthFillImage: {fileID: 3392870738042103177}
   healthText: {fileID: 8452255208329994106}
@@ -3951,7 +3973,6 @@ MonoBehaviour:
   damageNumberRiseSpeed: 55
   damageNumberColor: {r: 1, g: 0.88, b: 0.35, a: 1}
   staminaFillImage: {fileID: 6928342441366748752}
-  defaultStaminaNormalized: 1
   ammoText: {fileID: 2777653285007618086}
   noWeaponAmmoText: -- / --
   damageOverlayGroup: {fileID: 7989046367203034085}

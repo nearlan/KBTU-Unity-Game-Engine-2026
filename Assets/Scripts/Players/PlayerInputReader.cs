@@ -14,6 +14,7 @@ namespace RUSH.Players
         private const string InteractAction = "Interact";
         private const string SprintAction = "Sprint";
         private const string JumpAction = "Jump";
+        private const string CrouchAction = "Crouch";
 
         [SerializeField] private InputActionAsset actions;
         [SerializeField] private string actionMapName = "Player";
@@ -28,6 +29,7 @@ namespace RUSH.Players
         private InputAction interact;
         private InputAction sprint;
         private InputAction jump;
+        private InputAction crouch;
 
         public Vector2 Move => move.ReadValue<Vector2>();
         public Vector2 Look => look.ReadValue<Vector2>();
@@ -40,6 +42,8 @@ namespace RUSH.Players
         public bool InteractPressed => interact.WasPressedThisFrame();
         public bool SprintHeld => sprint.IsPressed();
         public bool JumpPressed => jump.WasPressedThisFrame();
+        public bool CrouchPressed => crouch.WasPressedThisFrame();
+        public bool CrouchHeld => crouch.IsPressed();
 
         private void Awake()
         {
@@ -55,6 +59,7 @@ namespace RUSH.Players
             interact = actionMap.FindAction(InteractAction, true);
             sprint = actionMap.FindAction(SprintAction, true);
             jump = actionMap.FindAction(JumpAction, true);
+            crouch = actionMap.FindAction(CrouchAction, true);
         }
 
         private void OnEnable()
