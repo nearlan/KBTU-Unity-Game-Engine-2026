@@ -12,7 +12,6 @@ namespace RUSH.Weapons
         [SerializeField, Range(0f, 1f)] private float aimMultiplier = 0.6f;
         [SerializeField, Range(0f, 1f)] private float crouchMultiplier = 0.75f;
 
-        // x: pitch kick upwards, y: yaw kick sideways (degrees).
         public Vector2 EvaluateKick(bool aiming, bool crouching)
         {
             float scale = (aiming ? aimMultiplier : 1f) * (crouching ? crouchMultiplier : 1f);

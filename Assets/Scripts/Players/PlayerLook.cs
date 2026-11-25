@@ -85,9 +85,6 @@ namespace RUSH.Players
             currentRecoil = Vector2.Lerp(currentRecoil, targetRecoil, 1f - Mathf.Exp(-recoilSnappiness * deltaTime));
         }
 
-        // Pulling the mouse down against vertical recoil eats into the accumulated kick,
-        // so the later return does not drag the view below where the player compensated to.
-        // Returns the part of the vertical mouse delta consumed by the recoil.
         private float AbsorbRecoilCompensation(float verticalDelta)
         {
             if (verticalDelta >= 0f || targetRecoil.x <= 0f)

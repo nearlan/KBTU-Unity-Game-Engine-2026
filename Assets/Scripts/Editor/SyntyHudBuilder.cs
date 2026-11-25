@@ -135,7 +135,6 @@ namespace RUSH.EditorTools
                 group.blocksRaycasts = false;
             }
 
-            // Systems that do not exist in the game yet.
             DestroyChildren(screen.transform.Find("WorldSpace"));
             DestroyChildren(screen.transform.Find("ScreenSpace/Top Left"));
             DestroyChildren(screen.transform.Find("ScreenSpace/Top Right"));
@@ -148,8 +147,6 @@ namespace RUSH.EditorTools
         {
             Transform dial = FindRequired(screen, "ScreenSpace/Bottom Left").GetChild(0);
 
-            // The pre-made HUD hides the dial's own health bar and adds its own copy,
-            // so pick the slider that is actually visible.
             Slider healthSlider = dial.GetComponentsInChildren<Slider>(true)
                 .FirstOrDefault(slider => IsActiveUnder(slider.transform, dial));
             if (healthSlider == null)
@@ -182,7 +179,6 @@ namespace RUSH.EditorTools
             SetReference(staminaView, "dialAnimator", staminaDial);
         }
 
-        // A copy of the slider fill, drawn behind it, that HealthBarView stretches over the health just lost.
         private static Image BuildDamageChip(Slider slider)
         {
             RectTransform fill = slider.fillRect;
@@ -247,8 +243,6 @@ namespace RUSH.EditorTools
             fade.name = "Overlay_FadeToBlack";
             Stretch(fade.GetComponent<RectTransform>());
 
-            // The overlay ships opaque and is hidden by its Animator only in Play Mode,
-            // so keep it transparent at rest to avoid a black Game view in the editor.
             foreach (CanvasGroup group in fade.GetComponentsInChildren<CanvasGroup>(true))
                 group.alpha = 0f;
 
@@ -276,8 +270,6 @@ namespace RUSH.EditorTools
             SetReference(view, "labelGroup", labelGroup);
         }
 
-        // Synty pre-made HUDs ship with demo scripts (e.g. SampleLoopAnimator) that
-        // animate the widgets on their own and override values driven by the game.
         private static void RemoveSampleScripts(Transform hud)
         {
             foreach (MonoBehaviour behaviour in hud.GetComponentsInChildren<MonoBehaviour>(true))

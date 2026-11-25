@@ -15,7 +15,6 @@ namespace RUSH.UI
         [SerializeField, Min(0f)] private float fadeSpeed = 12f;
         [SerializeField, Min(0.05f)] private float reticleScale = 0.5f;
 
-        // Synty reticle scales from x1 (Aim = 0) to x5 (Aim = 1), so keep spread values small.
         [Header("Spread")]
         [SerializeField, Range(0f, 1f)] private float movingSpread = 0.05f;
         [SerializeField, Range(0f, 1f)] private float sprintingSpread = 0.1f;

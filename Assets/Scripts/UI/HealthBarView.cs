@@ -76,7 +76,6 @@ namespace RUSH.UI
 
         private void StartChip(float from, float to)
         {
-            // Stacking hits extend the current chip instead of restarting it from a shorter segment.
             chipEnd = chipActive ? Mathf.Max(chipEnd, from) : from;
             chipStart = chipEnd;
             chipTimer = 0f;
@@ -95,7 +94,6 @@ namespace RUSH.UI
             float fade = Mathf.Clamp01((chipTimer - fadeStart) / chipFadeDuration);
             float eased = fade * fade * (3f - 2f * fade);
 
-            // Shrink towards the current value while fading, so the segment visibly "drains away".
             chipEnd = Mathf.Lerp(chipStart, displayed, eased);
 
             Color color = chipFlashDuration > 0f
