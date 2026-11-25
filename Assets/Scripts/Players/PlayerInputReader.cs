@@ -15,6 +15,11 @@ namespace RUSH.Players
         private const string SprintAction = "Sprint";
         private const string JumpAction = "Jump";
         private const string CrouchAction = "Crouch";
+        private const string PrimaryWeaponAction = "PrimaryWeapon";
+        private const string SecondaryWeaponAction = "SecondaryWeapon";
+        private const string CycleWeaponAction = "CycleWeapon";
+        private const string InventoryAction = "Inventory";
+        private const string HealAction = "Heal";
 
         [SerializeField] private InputActionAsset actions;
         [SerializeField] private string actionMapName = "Player";
@@ -30,6 +35,11 @@ namespace RUSH.Players
         private InputAction sprint;
         private InputAction jump;
         private InputAction crouch;
+        private InputAction primaryWeapon;
+        private InputAction secondaryWeapon;
+        private InputAction cycleWeapon;
+        private InputAction inventory;
+        private InputAction heal;
 
         public Vector2 Move => move.ReadValue<Vector2>();
         public Vector2 Look => look.ReadValue<Vector2>();
@@ -44,6 +54,11 @@ namespace RUSH.Players
         public bool JumpPressed => jump.WasPressedThisFrame();
         public bool CrouchPressed => crouch.WasPressedThisFrame();
         public bool CrouchHeld => crouch.IsPressed();
+        public bool PrimaryWeaponPressed => primaryWeapon.WasPressedThisFrame();
+        public bool SecondaryWeaponPressed => secondaryWeapon.WasPressedThisFrame();
+        public float CycleWeapon => cycleWeapon.ReadValue<float>();
+        public bool InventoryPressed => inventory.WasPressedThisFrame();
+        public bool HealPressed => heal.WasPressedThisFrame();
 
         private void Awake()
         {
@@ -60,6 +75,11 @@ namespace RUSH.Players
             sprint = actionMap.FindAction(SprintAction, true);
             jump = actionMap.FindAction(JumpAction, true);
             crouch = actionMap.FindAction(CrouchAction, true);
+            primaryWeapon = actionMap.FindAction(PrimaryWeaponAction, true);
+            secondaryWeapon = actionMap.FindAction(SecondaryWeaponAction, true);
+            cycleWeapon = actionMap.FindAction(CycleWeaponAction, true);
+            inventory = actionMap.FindAction(InventoryAction, true);
+            heal = actionMap.FindAction(HealAction, true);
         }
 
         private void OnEnable()

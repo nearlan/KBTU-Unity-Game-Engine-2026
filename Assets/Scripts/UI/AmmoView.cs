@@ -2,6 +2,7 @@ using RUSH.Players;
 using RUSH.Weapons;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace RUSH.UI
@@ -12,13 +13,15 @@ namespace RUSH.UI
         [SerializeField] private PlayerWeaponHandler weaponHandler;
         [SerializeField] private Image weaponIcon;
         [SerializeField] private TMP_Text ammunitionLabel;
-        [SerializeField] private TMP_Text magazineLabel;
+        [FormerlySerializedAs("magazineLabel")]
+        [SerializeField] private TMP_Text reserveLabel;
+        [SerializeField] private string unlimitedReserveText = "--";
         [SerializeField, Min(0f)] private float fadeSpeed = 8f;
 
         private CanvasGroup canvasGroup;
         private Weapon shownWeapon;
         private int shownAmmunition = -1;
-        private int shownMagazine = -1;
+        private int shownReserve = -1;
 
         private void Awake()
         {
@@ -40,13 +43,13 @@ namespace RUSH.UI
             }
 
             if (weapon is Firearm firearm)
-                SetCounts(firearm.Ammunition, firearm.MagazineSize);
+                SetCounts(firearm.Ammunition, weaponHandler.HasUnlimitedAmmunition ? int.MaxValue : weaponHandler.ReserveAmmunition);
 
             float target = weapon != null ? 1f : 0f;
             canvasGroup.alpha = Mathf.MoveTowards(canvasGroup.alpha, target, fadeSpeed * Time.deltaTime);
         }
 
-        private void SetCounts(int ammunition, int magazine)
+        private void SetCounts(int ammunition, int reserve)
         {
             if (ammunition != shownAmmunition && ammunitionLabel != null)
             {
@@ -54,10 +57,13 @@ namespace RUSH.UI
                 ammunitionLabel.SetText("{0}", ammunition);
             }
 
-            if (magazine != shownMagazine && magazineLabel != null)
+            if (reserve != shownReserve && reserveLabel != null)
             {
-                shownMagazine = magazine;
-                magazineLabel.SetText("{0}", magazine);
+                shownReserve = reserve;
+                if (reserve == int.MaxValue)
+                    reserveLabel.SetText(unlimitedReserveText);
+                else
+                    reserveLabel.SetText("{0}", reserve);
             }
         }
     }

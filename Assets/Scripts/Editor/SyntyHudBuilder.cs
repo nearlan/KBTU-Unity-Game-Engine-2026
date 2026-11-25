@@ -208,7 +208,7 @@ namespace RUSH.EditorTools
             SetReference(view, "weaponHandler", weaponHandler);
             SetReference(view, "weaponIcon", FindByName<Image>(widget, "Icon_CurrentWeapon"));
             SetReference(view, "ammunitionLabel", labels.FirstOrDefault(l => l.name == "Label_AmmoCount"));
-            SetReference(view, "magazineLabel", labels.FirstOrDefault(l => l.name == "Label_AmmoTotal"));
+            SetReference(view, "reserveLabel", labels.FirstOrDefault(l => l.name == "Label_AmmoTotal"));
         }
 
         private static void BuildCrosshair(Transform screen, PlayerWeaponHandler weaponHandler, PlayerMovement movement)

@@ -739,6 +739,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acd1d7154d201e040992bfde43d2ee26, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RUSH.Weapons.Firearm
+  slot: 1
   armsController: {fileID: 22100000, guid: 257eac322a7afde43bfa9aa9e60baa84, type: 2}
   gripPosition: {x: 0.0000000064865735, y: 0.00000000100923, z: 0.000000013117384}
   gripRotation: {x: 0.7071068, y: 0.000000033141344, z: -0.000000010138381, w: 0.7071068}
@@ -766,6 +767,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294966779
   magazineSize: 10
+  ammoType: {fileID: 11400000, guid: 6e6336cd83741944d85f8811a439889d, type: 2}
   muzzleFlash: {fileID: 1941483724433878721}
   ejectionSocket: {fileID: 3099916813731854933}
   casingPrefab: {fileID: 6972033733013643986, guid: 54febbab725d09a4ba4f500544995879, type: 3}

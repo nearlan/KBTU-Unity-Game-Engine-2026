@@ -1,3 +1,4 @@
+using RUSH.Items;
 using UnityEngine;
 
 namespace RUSH.Weapons
@@ -5,6 +6,9 @@ namespace RUSH.Weapons
     [RequireComponent(typeof(Rigidbody))]
     public abstract class Weapon : MonoBehaviour
     {
+        [Header("Inventory")]
+        [SerializeField] private WeaponSlot slot = WeaponSlot.Primary;
+
         [Header("Holding")]
         [SerializeField] private RuntimeAnimatorController armsController;
         [SerializeField] private Vector3 gripPosition;
@@ -33,6 +37,10 @@ namespace RUSH.Weapons
         public WeaponSounds Sounds => sounds;
         public WeaponRecoil Recoil => recoil;
         public Sprite HudIcon => hudIcon;
+        public WeaponSlot Slot => slot;
+
+        public virtual AmmoDefinition AmmoType => null;
+        public virtual int MissingRounds => 0;
 
         public abstract bool IsAutomatic { get; }
         public abstract bool IsReadyToFire { get; }
@@ -95,7 +103,7 @@ namespace RUSH.Weapons
 
         public abstract void BeginReload();
 
-        public abstract void FillAmmunition();
+        public abstract void FillAmmunition(int rounds);
 
         public virtual void EjectCasing()
         {

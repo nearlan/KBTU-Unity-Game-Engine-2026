@@ -1,5 +1,6 @@
 using System;
 using RUSH.Core;
+using RUSH.Items;
 using RUSH.Weapons;
 using UnityEngine;
 
@@ -8,8 +9,10 @@ namespace RUSH.Players
     public class PlayerWeaponHandler : MonoBehaviour
     {
         private static readonly Vector3 ScreenCenter = new(0.5f, 0.5f, 0f);
+        private static readonly int SlotCount = Enum.GetValues(typeof(WeaponSlot)).Length;
 
         [SerializeField] private PlayerInputReader input;
+        [SerializeField] private Inventory inventory;
         [SerializeField] private PlayerArms arms;
         [SerializeField] private ArmsAnimationEvents animationEvents;
         [SerializeField] private Transform weaponSocket;
@@ -25,21 +28,31 @@ namespace RUSH.Players
         [SerializeField, Min(0f)] private float throwSpeed = 4f;
         [SerializeField] private Vector3 dropOffset = new(0f, -0.2f, 0.7f);
 
+        [Header("Switching")]
+        [SerializeField, Min(0f)] private float scrollThreshold = 0.01f;
+
         [Header("Layers")]
         [SerializeField] private string equippedLayerName = "FirstPerson";
         [SerializeField] private string worldLayerName = "Default";
 
+        private readonly Weapon[] slots = new Weapon[SlotCount];
+        private int activeSlot;
         private int equippedLayer;
         private int worldLayer;
         private bool isReloading;
         private bool isInspecting;
 
         public event Action<Weapon> Fired;
+        public event Action WeaponsChanged;
 
-        public Weapon CurrentWeapon { get; private set; }
+        public Weapon CurrentWeapon => slots[activeSlot];
+        public WeaponSlot ActiveSlot => (WeaponSlot)activeSlot;
+        public bool InputBlocked { get; set; }
         public bool IsAiming { get; private set; }
         public bool IsBusy => isReloading || isInspecting;
-        public bool IsFiring => CurrentWeapon != null && input.AttackHeld && CurrentWeapon.HasAmmunition;
+        public bool IsFiring => CurrentWeapon != null && !InputBlocked && input.AttackHeld && CurrentWeapon.HasAmmunition;
+        public bool HasUnlimitedAmmunition => CurrentWeapon != null && CurrentWeapon.AmmoType == null;
+        public int ReserveAmmunition => CurrentWeapon != null ? AvailableRounds(CurrentWeapon) : 0;
 
         private Ray AimRay => viewCamera.ViewportPointToRay(ScreenCenter);
 
@@ -71,16 +84,24 @@ namespace RUSH.Players
             arms.SetWeapon(null);
 
             if (startingWeapon != null)
-                Equip(Instantiate(startingWeapon), false);
+                Store(Instantiate(startingWeapon), false);
         }
 
         private void Update()
         {
+            if (InputBlocked)
+            {
+                IsAiming = false;
+                return;
+            }
+
             if (input.DropPressed)
-                Drop();
+                Drop(ActiveSlot);
 
             if (input.InteractPressed)
                 TryPickUp();
+
+            HandleSwitching();
 
             if (CurrentWeapon == null)
             {
@@ -93,6 +114,75 @@ namespace RUSH.Players
 
             HandleFiring();
             UpdateAiming();
+        }
+
+        public Weapon GetWeapon(WeaponSlot slot)
+        {
+            return slots[(int)slot];
+        }
+
+        public void Select(WeaponSlot slot)
+        {
+            int index = (int)slot;
+            if (index == activeSlot || slots[index] == null)
+                return;
+
+            Holster(CurrentWeapon);
+            activeSlot = index;
+            Draw(slots[index], false);
+            WeaponsChanged?.Invoke();
+        }
+
+        public void Drop(WeaponSlot slot)
+        {
+            int index = (int)slot;
+            bool wasActive = index == activeSlot;
+            if (Release(index) == null)
+                return;
+
+            if (wasActive)
+            {
+                int other = FindOccupiedSlot();
+                if (other >= 0)
+                {
+                    activeSlot = other;
+                    Draw(slots[other], false);
+                }
+            }
+
+            WeaponsChanged?.Invoke();
+        }
+
+        private void HandleSwitching()
+        {
+            if (input.PrimaryWeaponPressed)
+            {
+                Select(WeaponSlot.Primary);
+                return;
+            }
+
+            if (input.SecondaryWeaponPressed)
+            {
+                Select(WeaponSlot.Secondary);
+                return;
+            }
+
+            float scroll = input.CycleWeapon;
+            if (Mathf.Abs(scroll) > scrollThreshold)
+                Cycle(scroll > 0f ? -1 : 1);
+        }
+
+        private void Cycle(int direction)
+        {
+            for (int step = 1; step < SlotCount; step++)
+            {
+                int index = (activeSlot + direction * step + SlotCount) % SlotCount;
+                if (slots[index] == null)
+                    continue;
+
+                Select((WeaponSlot)index);
+                return;
+            }
         }
 
         private void UpdateAiming()
@@ -131,7 +221,7 @@ namespace RUSH.Players
 
         private void TryReload()
         {
-            if (IsBusy || !CurrentWeapon.CanReload)
+            if (IsBusy || !CurrentWeapon.CanReload || AvailableRounds(CurrentWeapon) <= 0)
                 return;
 
             isReloading = true;
@@ -164,17 +254,55 @@ namespace RUSH.Players
             if (weapon == null || weapon.IsEquipped)
                 return;
 
-            Drop();
-            Equip(weapon, true);
+            Store(weapon, true);
         }
 
-        private void Equip(Weapon weapon, bool inspect)
+        private void Store(Weapon weapon, bool inspect)
         {
-            CurrentWeapon = weapon;
-            isReloading = false;
-            isInspecting = false;
+            int index = (int)weapon.Slot;
+
+            Release(index);
+            Holster(CurrentWeapon);
 
             weapon.Equip(gameObject, weaponSocket, equippedLayer);
+            slots[index] = weapon;
+            activeSlot = index;
+            Draw(weapon, inspect);
+            WeaponsChanged?.Invoke();
+        }
+
+        private Weapon Release(int index)
+        {
+            Weapon weapon = slots[index];
+            if (weapon == null)
+                return null;
+
+            slots[index] = null;
+            if (index == activeSlot)
+            {
+                ResetActionState();
+                arms.SetWeapon(null);
+            }
+
+            weapon.gameObject.SetActive(true);
+            Transform view = viewCamera.transform;
+            weapon.Drop(view.TransformPoint(dropOffset), view.rotation, view.forward * throwSpeed, worldLayer);
+            return weapon;
+        }
+
+        private void Holster(Weapon weapon)
+        {
+            if (weapon == null)
+                return;
+
+            ResetActionState();
+            weapon.gameObject.SetActive(false);
+        }
+
+        private void Draw(Weapon weapon, bool inspect)
+        {
+            ResetActionState();
+            weapon.gameObject.SetActive(true);
             arms.SetWeapon(weapon);
 
             if (!inspect)
@@ -185,20 +313,38 @@ namespace RUSH.Players
             isInspecting = true;
         }
 
-        private void Drop()
+        private void ResetActionState()
         {
-            if (CurrentWeapon == null)
-                return;
-
-            Weapon weapon = CurrentWeapon;
-            CurrentWeapon = null;
             isReloading = false;
             isInspecting = false;
             IsAiming = false;
-            arms.SetWeapon(null);
+        }
 
-            Transform view = viewCamera.transform;
-            weapon.Drop(view.TransformPoint(dropOffset), view.rotation, view.forward * throwSpeed, worldLayer);
+        private int FindOccupiedSlot()
+        {
+            for (int i = 0; i < slots.Length; i++)
+            {
+                if (slots[i] != null)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        private int AvailableRounds(Weapon weapon)
+        {
+            if (weapon.AmmoType == null)
+                return int.MaxValue;
+
+            return inventory != null ? inventory.Count(weapon.AmmoType) : 0;
+        }
+
+        private int TakeRounds(Weapon weapon, int rounds)
+        {
+            if (weapon.AmmoType == null)
+                return rounds;
+
+            return inventory != null ? inventory.Remove(weapon.AmmoType, rounds) : 0;
         }
 
         private void HandleCasingEjected()
@@ -209,8 +355,10 @@ namespace RUSH.Players
 
         private void HandleAmmunitionFilled()
         {
-            if (isReloading && CurrentWeapon != null)
-                CurrentWeapon.FillAmmunition();
+            if (!isReloading || CurrentWeapon == null)
+                return;
+
+            CurrentWeapon.FillAmmunition(TakeRounds(CurrentWeapon, CurrentWeapon.MissingRounds));
         }
 
         private void HandleReloadEnded()

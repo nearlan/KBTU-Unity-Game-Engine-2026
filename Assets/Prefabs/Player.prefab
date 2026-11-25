@@ -144,6 +144,7 @@ GameObject:
   - component: {fileID: 2778478750229958384}
   - component: {fileID: 1910971114000040163}
   - component: {fileID: 6497957477005365924}
+  - component: {fileID: 3673408225353866507}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -384,6 +385,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RUSH.Players.PlayerWeaponHandler
   input: {fileID: 5964305835268616885}
+  inventory: {fileID: 3673408225353866507}
   arms: {fileID: 4322126471223699682}
   animationEvents: {fileID: 1326565625104958024}
   weaponSocket: {fileID: 1144958550657219524}
@@ -396,6 +398,7 @@ MonoBehaviour:
     m_Bits: 51
   throwSpeed: 4
   dropOffset: {x: 0, y: -0.2, z: 0.7}
+  scrollThreshold: 0.01
   equippedLayerName: FirstPerson
   worldLayerName: Default
 --- !u!114 &1910971114000040163
@@ -431,6 +434,23 @@ MonoBehaviour:
   regenPerSecond: 25
   regenDelay: 1
   exhaustionRecoveryThreshold: 0.3
+--- !u!114 &3673408225353866507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 451600006900519649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92bc872fa32553348ac4967fe7dacb0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Items.Inventory
+  columns: 5
+  rows: 4
+  startingItems:
+  - definition: {fileID: 11400000, guid: 6f7a806a1bffea341a974e42053f4efd, type: 2}
+    count: 60
 --- !u!1 &725002729959618978
 GameObject:
   m_ObjectHideFlags: 0
@@ -5341,5 +5361,6 @@ MonoBehaviour:
   weaponHandler: {fileID: 2778478750229958384}
   weaponIcon: {fileID: 4105466607076710712}
   ammunitionLabel: {fileID: 7044003558498090589}
-  magazineLabel: {fileID: 4198374220253816311}
+  reserveLabel: {fileID: 4198374220253816311}
+  unlimitedReserveText: --
   fadeSpeed: 8
