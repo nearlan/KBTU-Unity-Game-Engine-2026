@@ -97,6 +97,7 @@ namespace RUSH.EditorTools
                 BuildCrosshair(screen, weaponHandler, movement);
                 BuildDamageFeedback(screen, player, audioSource);
                 BuildGameOver(hud, screen, player);
+                RemoveSampleScripts(hud);
 
                 PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefabPath);
             }
@@ -146,7 +147,13 @@ namespace RUSH.EditorTools
         {
             Transform dial = FindRequired(screen, "ScreenSpace/Bottom Left").GetChild(0);
 
-            Slider healthSlider = dial.GetComponentInChildren<Slider>(true);
+            // The pre-made HUD hides the dial's own health bar and adds its own copy,
+            // so pick the slider that is actually visible.
+            Slider healthSlider = dial.GetComponentsInChildren<Slider>(true)
+                .FirstOrDefault(slider => IsActiveUnder(slider.transform, dial));
+            if (healthSlider == null)
+                throw new System.InvalidOperationException("Visible health slider not found in " + dial.name);
+
             HealthBarView health = dial.gameObject.AddComponent<HealthBarView>();
             SetReference(health, "target", player);
             SetReference(health, "slider", healthSlider);
@@ -241,6 +248,18 @@ namespace RUSH.EditorTools
             SetReference(view, "labelGroup", labelGroup);
         }
 
+        // Synty pre-made HUDs ship with demo scripts (e.g. SampleLoopAnimator) that
+        // animate the widgets on their own and override values driven by the game.
+        private static void RemoveSampleScripts(Transform hud)
+        {
+            foreach (MonoBehaviour behaviour in hud.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                string ns = behaviour != null ? behaviour.GetType().Namespace : null;
+                if (ns != null && ns.StartsWith("Synty.") && ns.EndsWith(".Samples"))
+                    Object.DestroyImmediate(behaviour);
+            }
+        }
+
         private static GameObject Instantiate(string prefabPath, Transform parent)
         {
             return (GameObject)PrefabUtility.InstantiatePrefab(Load<GameObject>(prefabPath), parent);
@@ -265,6 +284,19 @@ namespace RUSH.EditorTools
         private static T FindByName<T>(Transform parent, string name) where T : Component
         {
             return parent.GetComponentsInChildren<T>(true).FirstOrDefault(c => c.name == name);
+        }
+
+        private static bool IsActiveUnder(Transform transform, Transform root)
+        {
+            for (Transform current = transform; current != null; current = current.parent)
+            {
+                if (!current.gameObject.activeSelf)
+                    return false;
+                if (current == root)
+                    return true;
+            }
+
+            return true;
         }
 
         private static void DestroyChildren(Transform parent)

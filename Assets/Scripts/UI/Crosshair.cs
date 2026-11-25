@@ -13,12 +13,14 @@ namespace RUSH.UI
         [SerializeField] private Animator reticleAnimator;
         [SerializeField] private bool hideWhileAiming = true;
         [SerializeField, Min(0f)] private float fadeSpeed = 12f;
+        [SerializeField, Min(0.05f)] private float reticleScale = 0.5f;
 
+        // Synty reticle scales from x1 (Aim = 0) to x5 (Aim = 1), so keep spread values small.
         [Header("Spread")]
-        [SerializeField, Range(0f, 1f)] private float movingSpread = 0.4f;
-        [SerializeField, Range(0f, 1f)] private float sprintingSpread = 0.8f;
-        [SerializeField, Range(0f, 1f)] private float firingSpread = 1f;
-        [SerializeField, Min(0f)] private float spreadSpeed = 6f;
+        [SerializeField, Range(0f, 1f)] private float movingSpread = 0.05f;
+        [SerializeField, Range(0f, 1f)] private float sprintingSpread = 0.1f;
+        [SerializeField, Range(0f, 1f)] private float firingSpread = 0.15f;
+        [SerializeField, Min(0f)] private float spreadSpeed = 1.5f;
 
         private CanvasGroup canvasGroup;
         private float spread;
@@ -35,6 +37,18 @@ namespace RUSH.UI
             canvasGroup.alpha = 0f;
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
+            ApplyReticleScale();
+        }
+
+        private void OnValidate()
+        {
+            ApplyReticleScale();
+        }
+
+        private void ApplyReticleScale()
+        {
+            if (reticleAnimator != null)
+                reticleAnimator.transform.localScale = Vector3.one * reticleScale;
         }
 
         private void Update()
