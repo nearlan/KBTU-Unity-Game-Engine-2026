@@ -4257,7 +4257,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RUSH.UI.HealthBarView
   target: {fileID: 1910971114000040163}
-  slider: {fileID: 6617859061989826687}
+  slider: {fileID: 2950923289999001781}
   drainSpeed: 1.5
 --- !u!114 &8766359237149802205
 MonoBehaviour:
@@ -4278,17 +4278,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 6850370780090377214, guid: c81dee3bbd8cf46a780fa31b33a2be60, type: 3}
   m_PrefabInstance: {fileID: 1256924715059809979}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6617859061989826687 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5379028171600195268, guid: c81dee3bbd8cf46a780fa31b33a2be60, type: 3}
-  m_PrefabInstance: {fileID: 1256924715059809979}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &7997102513022247193 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 9190179993116716962, guid: c81dee3bbd8cf46a780fa31b33a2be60, type: 3}
@@ -4793,6 +4782,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1286133039717619155}
   m_SourcePrefab: {fileID: 100100000, guid: fb332a7c800f94eaba4ec5046d798783, type: 3}
+--- !u!114 &2950923289999001781 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8269532055776948113, guid: fb332a7c800f94eaba4ec5046d798783, type: 3}
+  m_PrefabInstance: {fileID: 6498851010224269092}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4845966405939913214 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1833205063244138202, guid: fb332a7c800f94eaba4ec5046d798783, type: 3}
@@ -4836,6 +4836,10 @@ PrefabInstance:
     - target: {fileID: 165419725799739068, guid: 62bca481f54e228428d37865f8dae489, type: 3}
       propertyPath: m_Name
       value: Overlay_FadeToBlack
+      objectReference: {fileID: 0}
+    - target: {fileID: 4237758777679650209, guid: 62bca481f54e228428d37865f8dae489, type: 3}
+      propertyPath: m_Alpha
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6285211437869958988, guid: 62bca481f54e228428d37865f8dae489, type: 3}
       propertyPath: m_Pivot.x

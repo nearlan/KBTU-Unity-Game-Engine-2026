@@ -224,6 +224,11 @@ namespace RUSH.EditorTools
             fade.name = "Overlay_FadeToBlack";
             Stretch(fade.GetComponent<RectTransform>());
 
+            // The overlay ships opaque and is hidden by its Animator only in Play Mode,
+            // so keep it transparent at rest to avoid a black Game view in the editor.
+            foreach (CanvasGroup group in fade.GetComponentsInChildren<CanvasGroup>(true))
+                group.alpha = 0f;
+
             GameObject label = Instantiate(HeaderLabelPath, hud);
             label.name = "GameOverLabel";
             RectTransform labelRect = label.GetComponent<RectTransform>();
