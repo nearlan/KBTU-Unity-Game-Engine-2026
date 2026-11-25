@@ -5,6 +5,16 @@ namespace KBTU.Players
 {
     public class PlayerInputReader : MonoBehaviour
     {
+        private const string MoveAction = "Move";
+        private const string LookAction = "Look";
+        private const string AttackAction = "Attack";
+        private const string AimAction = "Aim";
+        private const string ReloadAction = "Reload";
+        private const string DropAction = "Drop";
+        private const string InteractAction = "Interact";
+        private const string SprintAction = "Sprint";
+        private const string JumpAction = "Jump";
+
         [SerializeField] private InputActionAsset actions;
         [SerializeField] private string actionMapName = "Player";
 
@@ -36,15 +46,15 @@ namespace KBTU.Players
             InputActionAsset asset = actions != null ? actions : InputSystem.actions;
             actionMap = asset.FindActionMap(actionMapName, true);
 
-            move = actionMap.FindAction("Move", true);
-            look = actionMap.FindAction("Look", true);
-            attack = actionMap.FindAction("Attack", true);
-            aim = actionMap.FindAction("Aim", true);
-            reload = actionMap.FindAction("Reload", true);
-            drop = actionMap.FindAction("Drop", true);
-            interact = actionMap.FindAction("Interact", true);
-            sprint = actionMap.FindAction("Sprint", true);
-            jump = actionMap.FindAction("Jump", true);
+            move = actionMap.FindAction(MoveAction, true);
+            look = actionMap.FindAction(LookAction, true);
+            attack = actionMap.FindAction(AttackAction, true);
+            aim = actionMap.FindAction(AimAction, true);
+            reload = actionMap.FindAction(ReloadAction, true);
+            drop = actionMap.FindAction(DropAction, true);
+            interact = actionMap.FindAction(InteractAction, true);
+            sprint = actionMap.FindAction(SprintAction, true);
+            jump = actionMap.FindAction(JumpAction, true);
         }
 
         private void OnEnable()
