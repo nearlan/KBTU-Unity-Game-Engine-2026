@@ -98,6 +98,7 @@ namespace RUSH.EditorTools
                 BuildCrosshair(screen, weaponHandler, movement);
                 BuildDamageFeedback(screen, player, audioSource);
                 BuildGameOver(hud, screen, player);
+                InventoryWindowBuilder.Build(root);
                 RemoveSampleScripts(hud);
 
                 PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefabPath);

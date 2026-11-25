@@ -9,7 +9,7 @@ namespace RUSH.Items
         [SerializeField, Min(1)] private int rows = 4;
         [SerializeField] private ItemStack[] startingItems = Array.Empty<ItemStack>();
 
-        private ItemStack[] slots;
+        [NonSerialized] private ItemStack[] slots;
 
         public event Action Changed;
 
@@ -17,7 +17,7 @@ namespace RUSH.Items
         public int Rows => rows;
         public int Capacity => Slots.Length;
 
-        private ItemStack[] Slots => slots ??= new ItemStack[columns * rows];
+        private ItemStack[] Slots => slots != null && slots.Length == columns * rows ? slots : slots = new ItemStack[columns * rows];
 
         public ItemStack this[int index] => Slots[index];
 
