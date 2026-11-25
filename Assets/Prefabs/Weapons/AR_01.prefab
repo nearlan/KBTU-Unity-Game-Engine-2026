@@ -788,6 +788,7 @@ MonoBehaviour:
     horizontal: 0.7
     aimMultiplier: 0.6
     crouchMultiplier: 0.75
+  hudIcon: {fileID: 21300000, guid: b4b6ed7980bc4524991e10d8befc7504, type: 3}
   automatic: 1
   roundsPerMinute: 610
   damage: 20

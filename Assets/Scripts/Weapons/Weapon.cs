@@ -20,6 +20,9 @@ namespace RUSH.Weapons
         [Header("Recoil")]
         [SerializeField] private WeaponRecoil recoil = new();
 
+        [Header("HUD")]
+        [SerializeField] private Sprite hudIcon;
+
         private Rigidbody body;
 
         protected Animator Animator { get; private set; }
@@ -29,6 +32,7 @@ namespace RUSH.Weapons
         public RuntimeAnimatorController ArmsController => armsController;
         public WeaponSounds Sounds => sounds;
         public WeaponRecoil Recoil => recoil;
+        public Sprite HudIcon => hudIcon;
 
         public abstract bool IsAutomatic { get; }
         public abstract bool IsReadyToFire { get; }
