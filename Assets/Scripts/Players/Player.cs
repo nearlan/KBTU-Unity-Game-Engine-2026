@@ -1,9 +1,9 @@
 using System.Collections;
-using KBTU.Core;
+using RUSH.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace KBTU.Players
+namespace RUSH.Players
 {
     [RequireComponent(typeof(PlayerMovement), typeof(PlayerLook), typeof(PlayerWeaponHandler))]
     public class Player : Entity

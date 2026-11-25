@@ -1,7 +1,7 @@
-using KBTU.Players;
+using RUSH.Players;
 using UnityEngine;
 
-namespace KBTU.UI
+namespace RUSH.UI
 {
     [RequireComponent(typeof(CanvasGroup))]
     public class Crosshair : MonoBehaviour

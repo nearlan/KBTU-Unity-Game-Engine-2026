@@ -1,8 +1,8 @@
-using KBTU.Players;
-using KBTU.Weapons;
+using RUSH.Players;
+using RUSH.Weapons;
 using UnityEngine;
 
-namespace KBTU.Animations
+namespace RUSH.Animations
 {
     public class WeaponSoundState : StateMachineBehaviour
     {

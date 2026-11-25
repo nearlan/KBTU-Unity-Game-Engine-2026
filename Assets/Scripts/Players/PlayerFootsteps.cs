@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace KBTU.Players
+namespace RUSH.Players
 {
     [RequireComponent(typeof(AudioSource))]
     public class PlayerFootsteps : MonoBehaviour

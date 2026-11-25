@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace KBTU.Players
+namespace RUSH.Players
 {
     [DefaultExecutionOrder(-50)]
     public class PlayerLook : MonoBehaviour

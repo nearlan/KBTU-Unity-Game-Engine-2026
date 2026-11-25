@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace KBTU.Enemies
+namespace RUSH.Enemies
 {
     [RequireComponent(typeof(NavMeshAgent))]
     public class EnemyChaser : MonoBehaviour

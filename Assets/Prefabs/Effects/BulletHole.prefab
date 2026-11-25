@@ -102,7 +102,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 36cc7dae95ad27e45953f5591c235684, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KBTU.Effects.BulletHole
+  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Effects.BulletHole
   sizeRange: {x: 0.12, y: 0.17}
   surfaceOffset: 0.003
   maxHoles: 64

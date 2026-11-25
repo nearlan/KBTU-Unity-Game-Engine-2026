@@ -1,8 +1,8 @@
-using KBTU.Core;
-using KBTU.Weapons;
+using RUSH.Core;
+using RUSH.Weapons;
 using UnityEngine;
 
-namespace KBTU.Players
+namespace RUSH.Players
 {
     public class PlayerWeaponHandler : MonoBehaviour
     {

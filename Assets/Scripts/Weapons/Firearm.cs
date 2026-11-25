@@ -1,8 +1,8 @@
-using KBTU.Core;
-using KBTU.Effects;
+using RUSH.Core;
+using RUSH.Effects;
 using UnityEngine;
 
-namespace KBTU.Weapons
+namespace RUSH.Weapons
 {
     public class Firearm : Weapon
     {

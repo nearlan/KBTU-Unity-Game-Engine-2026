@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace KBTU.Core
+namespace RUSH.Core
 {
     public static class CollectionExtensions
     {
