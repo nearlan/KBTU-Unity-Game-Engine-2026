@@ -1,3 +1,4 @@
+using System;
 using RUSH.Core;
 using RUSH.Weapons;
 using UnityEngine;
@@ -32,6 +33,8 @@ namespace RUSH.Players
         private int worldLayer;
         private bool isReloading;
         private bool isInspecting;
+
+        public event Action<Weapon> Fired;
 
         public Weapon CurrentWeapon { get; private set; }
         public bool IsAiming { get; private set; }
@@ -116,6 +119,7 @@ namespace RUSH.Players
                 InterruptInspect();
                 CurrentWeapon.Fire(AimRay);
                 arms.PlayFire();
+                Fired?.Invoke(CurrentWeapon);
             }
             else if (pressed)
             {

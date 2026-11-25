@@ -17,6 +17,9 @@ namespace RUSH.Weapons
         [Header("Audio")]
         [SerializeField] private WeaponSounds sounds = new();
 
+        [Header("Recoil")]
+        [SerializeField] private WeaponRecoil recoil = new();
+
         private Rigidbody body;
 
         protected Animator Animator { get; private set; }
@@ -25,6 +28,7 @@ namespace RUSH.Weapons
         public bool IsEquipped => Owner != null;
         public RuntimeAnimatorController ArmsController => armsController;
         public WeaponSounds Sounds => sounds;
+        public WeaponRecoil Recoil => recoil;
 
         public abstract bool IsAutomatic { get; }
         public abstract bool IsReadyToFire { get; }
