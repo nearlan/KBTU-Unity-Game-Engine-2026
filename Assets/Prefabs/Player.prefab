@@ -145,6 +145,7 @@ GameObject:
   - component: {fileID: 1910971114000040163}
   - component: {fileID: 6497957477005365924}
   - component: {fileID: 3673408225353866507}
+  - component: {fileID: 5933863049241348971}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -451,6 +452,23 @@ MonoBehaviour:
   startingItems:
   - definition: {fileID: 11400000, guid: 6f7a806a1bffea341a974e42053f4efd, type: 2}
     count: 60
+--- !u!114 &5933863049241348971
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 451600006900519649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73a9c15dc16276e449f51a67e6ad8961, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Players.PlayerItemActions
+  input: {fileID: 5964305835268616885}
+  inventory: {fileID: 3673408225353866507}
+  viewCamera: {fileID: 789225903980821396}
+  throwSpeed: 3
+  dropOffset: {x: 0, y: -0.2, z: 0.8}
 --- !u!1 &725002729959618978
 GameObject:
   m_ObjectHideFlags: 0

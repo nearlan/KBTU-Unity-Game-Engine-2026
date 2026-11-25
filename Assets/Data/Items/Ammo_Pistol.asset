@@ -16,5 +16,5 @@ MonoBehaviour:
   description: "\u041F\u0430\u0442\u0440\u043E\u043D\u044B 9 \u043C\u043C \u0434\u043B\u044F \u043F\u0438\u0441\u0442\u043E\u043B\u0435\u0442\u0430."
   icon: {fileID: 21300000, guid: ccaea8485baa7ef4da143c1232bef866, type: 3}
   maxStack: 60
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 7128572219080570876, guid: 8713242cb9d36b34abc49b743de8b66e, type: 3}
   caliber: 9mm
