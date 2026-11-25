@@ -1,7 +1,7 @@
-using KBTU.Core;
+using RUSH.Core;
 using UnityEngine;
 
-namespace KBTU.Items
+namespace RUSH.Items
 {
     public class Medkit : MonoBehaviour, IInteractable
     {

@@ -404,7 +404,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e6bd2692f000049429124bdb364941d6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KBTU.Enemies.EnemyChaser
+  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Enemies.EnemyChaser
   repathInterval: 0.2
   knockbackDamping: 10
   maxKnockbackSpeed: 12
@@ -419,7 +419,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 372f9b5ec2905a6408012b30369c1ce6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KBTU.Enemies.EnemyAttack
+  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Enemies.EnemyAttack
   damage: 10
   range: 1.8
   cooldown: 1
@@ -434,7 +434,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 90f48e510fc7e8741a13ea05938d9016, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KBTU.Enemies.Ragdoll
+  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Enemies.Ragdoll
   bodies:
   - {fileID: 6373499811737569256}
   - {fileID: 3810645839947035099}
@@ -453,7 +453,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 43dc546a69707c443bb37127f8a59a1f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KBTU.Effects.DamageFlash
+  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Effects.DamageFlash
   renderers:
   - {fileID: 8274443766533036651}
   - {fileID: 5578840794692845981}
@@ -472,7 +472,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f67740635760364489e0a8c9d3abf13d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KBTU.Enemies.Enemy
+  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Enemies.Enemy
   maxHealth: 100
   targetTag: Player
   damageFlash: {fileID: 7888433586187760304}
@@ -587,7 +587,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a8c4f1e29b304d7a9e1234567890abcd, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KBTU.Enemies.EnemyAudio
+  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Enemies.EnemyAudio
   idleClips:
   - {fileID: 8300000, guid: e1000000000000000000000000000101, type: 3}
   - {fileID: 8300000, guid: e1000000000000000000000000000102, type: 3}

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace KBTU.Weapons
+namespace RUSH.Weapons
 {
     [Serializable]
     public class WeaponSounds

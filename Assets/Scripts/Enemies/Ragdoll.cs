@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace KBTU.Enemies
+namespace RUSH.Enemies
 {
     public class Ragdoll : MonoBehaviour
     {

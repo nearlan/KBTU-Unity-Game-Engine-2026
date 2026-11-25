@@ -1,7 +1,7 @@
-using KBTU.Core;
+using RUSH.Core;
 using UnityEngine;
 
-namespace KBTU.Enemies
+namespace RUSH.Enemies
 {
     public class EnemyAttack : MonoBehaviour
     {

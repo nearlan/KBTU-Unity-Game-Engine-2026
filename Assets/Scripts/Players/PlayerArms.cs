@@ -1,7 +1,7 @@
-using KBTU.Weapons;
+using RUSH.Weapons;
 using UnityEngine;
 
-namespace KBTU.Players
+namespace RUSH.Players
 {
     [RequireComponent(typeof(Animator))]
     public class PlayerArms : MonoBehaviour

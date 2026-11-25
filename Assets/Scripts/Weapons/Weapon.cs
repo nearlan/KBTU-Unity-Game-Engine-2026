@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace KBTU.Weapons
+namespace RUSH.Weapons
 {
     [RequireComponent(typeof(Rigidbody))]
     public abstract class Weapon : MonoBehaviour

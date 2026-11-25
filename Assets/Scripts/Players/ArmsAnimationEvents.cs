@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace KBTU.Players
+namespace RUSH.Players
 {
     public class ArmsAnimationEvents : MonoBehaviour
     {

@@ -1,7 +1,7 @@
-using KBTU.Core;
+using RUSH.Core;
 using UnityEngine;
 
-namespace KBTU.Effects
+namespace RUSH.Effects
 {
     [RequireComponent(typeof(AudioSource))]
     public class ImpactEffect : MonoBehaviour

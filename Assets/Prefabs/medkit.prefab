@@ -116,7 +116,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b96886664b5cf49c2804945ce1fb0612, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KBTU.Items.Medkit
+  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Items.Medkit
   healAmount: 35
   requireMissingHealth: 1
   useClip: {fileID: 0}

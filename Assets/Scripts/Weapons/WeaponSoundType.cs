@@ -1,4 +1,4 @@
-namespace KBTU.Weapons
+namespace RUSH.Weapons
 {
     public enum WeaponSoundType
     {

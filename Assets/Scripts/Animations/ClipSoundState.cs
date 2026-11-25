@@ -1,7 +1,7 @@
-using KBTU.Players;
+using RUSH.Players;
 using UnityEngine;
 
-namespace KBTU.Animations
+namespace RUSH.Animations
 {
     public class ClipSoundState : StateMachineBehaviour
     {

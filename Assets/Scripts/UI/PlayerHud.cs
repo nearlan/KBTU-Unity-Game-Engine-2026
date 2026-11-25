@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using KBTU.Core;
-using KBTU.Players;
-using KBTU.Weapons;
+using RUSH.Core;
+using RUSH.Players;
+using RUSH.Weapons;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace KBTU.UI
+namespace RUSH.UI
 {
     public class PlayerHud : MonoBehaviour
     {

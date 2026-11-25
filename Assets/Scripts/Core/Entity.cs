@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace KBTU.Core
+namespace RUSH.Core
 {
     public abstract class Entity : MonoBehaviour, IDamageable
     {

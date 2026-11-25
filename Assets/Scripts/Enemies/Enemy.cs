@@ -1,8 +1,8 @@
-using KBTU.Core;
-using KBTU.Effects;
+using RUSH.Core;
+using RUSH.Effects;
 using UnityEngine;
 
-namespace KBTU.Enemies
+namespace RUSH.Enemies
 {
     [RequireComponent(typeof(EnemyChaser), typeof(EnemyAttack), typeof(Ragdoll))]
     public class Enemy : Entity

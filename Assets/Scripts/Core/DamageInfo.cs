@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace KBTU.Core
+namespace RUSH.Core
 {
     public readonly struct DamageInfo
     {
