@@ -14,20 +14,19 @@ namespace RUSH.Players
 
         public Inventory Inventory => inventory;
 
-        public bool Use(int index)
+        public bool Use(InventoryItem item)
         {
-            return inventory.Use(index, gameObject);
+            return inventory.Use(item, gameObject);
         }
 
-        public bool Drop(int index)
+        public bool Drop(InventoryItem item)
         {
-            ItemStack stack = inventory[index];
-            if (stack.IsEmpty || stack.Definition.WorldPrefab == null)
+            if (item == null || item.Instance != null || item.Definition.WorldPrefab == null || !inventory.Remove(item))
                 return false;
 
-            stack = inventory.Take(index);
             Transform view = viewCamera.transform;
             Quaternion rotation = Quaternion.Euler(0f, view.eulerAngles.y, 0f);
+            ItemStack stack = new(item.Definition, item.Count);
             ItemPickup pickup = ItemPickup.Spawn(stack, view.TransformPoint(dropOffset), rotation, view.forward * throwSpeed);
 
             if (pickup != null && TryGetComponent(out Collider ownCollider))

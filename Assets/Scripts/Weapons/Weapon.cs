@@ -8,6 +8,7 @@ namespace RUSH.Weapons
     {
         [Header("Inventory")]
         [SerializeField] private WeaponSlot slot = WeaponSlot.Primary;
+        [SerializeField] private WeaponItemDefinition itemDefinition;
 
         [Header("Holding")]
         [SerializeField] private RuntimeAnimatorController armsController;
@@ -38,6 +39,7 @@ namespace RUSH.Weapons
         public WeaponRecoil Recoil => recoil;
         public Sprite HudIcon => hudIcon;
         public WeaponSlot Slot => slot;
+        public WeaponItemDefinition ItemDefinition => itemDefinition;
 
         public virtual AmmoDefinition AmmoType => null;
         public virtual int MissingRounds => 0;

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace RUSH.Items
@@ -9,17 +10,30 @@ namespace RUSH.Items
         [SerializeField, Min(1)] private int rows = 4;
         [SerializeField] private ItemStack[] startingItems = Array.Empty<ItemStack>();
 
-        [NonSerialized] private ItemStack[] slots;
+        [NonSerialized] private List<InventoryItem> items;
+        [NonSerialized] private InventoryItem[] cells;
 
         public event Action Changed;
 
         public int Columns => columns;
         public int Rows => rows;
-        public int Capacity => Slots.Length;
+        public IReadOnlyList<InventoryItem> Items => ItemList;
 
-        private ItemStack[] Slots => slots != null && slots.Length == columns * rows ? slots : slots = new ItemStack[columns * rows];
+        private List<InventoryItem> ItemList => items ??= new List<InventoryItem>();
 
-        public ItemStack this[int index] => Slots[index];
+        private InventoryItem[] Cells
+        {
+            get
+            {
+                if (cells != null && cells.Length == columns * rows)
+                    return cells;
+
+                cells = new InventoryItem[columns * rows];
+                foreach (InventoryItem item in ItemList)
+                    Occupy(item, item);
+                return cells;
+            }
+        }
 
         private void Awake()
         {
@@ -30,6 +44,54 @@ namespace RUSH.Items
             }
         }
 
+        public InventoryItem GetAt(Vector2Int cell)
+        {
+            return IsInside(cell) ? Cells[cell.y * columns + cell.x] : null;
+        }
+
+        public bool CanPlace(Vector2Int size, Vector2Int position, InventoryItem ignore = null)
+        {
+            if (position.x < 0 || position.y < 0 || position.x + size.x > columns || position.y + size.y > rows)
+                return false;
+
+            for (int y = position.y; y < position.y + size.y; y++)
+            {
+                for (int x = position.x; x < position.x + size.x; x++)
+                {
+                    InventoryItem occupant = Cells[y * columns + x];
+                    if (occupant != null && occupant != ignore)
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        public bool TryFindSpace(ItemDefinition definition, out Vector2Int position, out bool rotated)
+        {
+            for (int pass = 0; pass < 2; pass++)
+            {
+                rotated = pass == 1;
+                Vector2Int size = definition.GetSize(rotated);
+                if (rotated && size == definition.Size)
+                    break;
+
+                for (int y = 0; y < rows; y++)
+                {
+                    for (int x = 0; x < columns; x++)
+                    {
+                        position = new Vector2Int(x, y);
+                        if (CanPlace(size, position))
+                            return true;
+                    }
+                }
+            }
+
+            position = default;
+            rotated = false;
+            return false;
+        }
+
         public int Add(ItemDefinition definition, int count)
         {
             int left = AddSilently(definition, count);
@@ -38,20 +100,80 @@ namespace RUSH.Items
             return left;
         }
 
+        public bool TryAddAt(ItemDefinition definition, Component instance, Vector2Int position, bool rotated)
+        {
+            if (definition == null || !CanPlace(definition.GetSize(rotated), position))
+                return false;
+
+            Insert(new InventoryItem(definition, 1, instance, position, rotated));
+            Changed?.Invoke();
+            return true;
+        }
+
+        public bool TryAdd(ItemDefinition definition, Component instance)
+        {
+            return definition != null
+                   && TryFindSpace(definition, out Vector2Int position, out bool rotated)
+                   && TryAddAt(definition, instance, position, rotated);
+        }
+
+        public bool TryMove(InventoryItem item, Vector2Int position, bool rotated)
+        {
+            if (!Contains(item) || !CanPlace(item.Definition.GetSize(rotated), position, item))
+                return false;
+
+            Occupy(item, null);
+            item.Position = position;
+            item.Rotated = rotated;
+            Occupy(item, item);
+            Changed?.Invoke();
+            return true;
+        }
+
+        public bool TryMerge(InventoryItem source, InventoryItem target)
+        {
+            if (!Contains(source) || !Contains(target) || !source.CanMergeInto(target))
+                return false;
+
+            int moved = Mathf.Min(source.Count, target.Definition.MaxStack - target.Count);
+            target.Count += moved;
+            source.Count -= moved;
+
+            if (source.Count <= 0)
+                Detach(source);
+
+            Changed?.Invoke();
+            return true;
+        }
+
+        public bool Remove(InventoryItem item)
+        {
+            if (!Contains(item))
+                return false;
+
+            Detach(item);
+            Changed?.Invoke();
+            return true;
+        }
+
         public int Remove(ItemDefinition definition, int count)
         {
             if (definition == null || count <= 0)
                 return 0;
 
             int removed = 0;
-            for (int i = Slots.Length - 1; i >= 0 && removed < count; i--)
+            for (int i = ItemList.Count - 1; i >= 0 && removed < count; i--)
             {
-                if (Slots[i].Definition != definition)
+                InventoryItem item = ItemList[i];
+                if (item.Definition != definition || item.Instance != null)
                     continue;
 
-                int taken = Mathf.Min(Slots[i].Count, count - removed);
-                Slots[i] = Slots[i].WithCount(Slots[i].Count - taken);
+                int taken = Mathf.Min(item.Count, count - removed);
+                item.Count -= taken;
                 removed += taken;
+
+                if (item.Count <= 0)
+                    Detach(item);
             }
 
             if (removed > 0)
@@ -65,72 +187,31 @@ namespace RUSH.Items
                 return 0;
 
             int total = 0;
-            foreach (ItemStack stack in Slots)
+            foreach (InventoryItem item in ItemList)
             {
-                if (stack.Definition == definition)
-                    total += stack.Count;
+                if (item.Definition == definition)
+                    total += item.Count;
             }
 
             return total;
         }
 
-        public int IndexOf<T>() where T : ItemDefinition
+        public bool Use(InventoryItem item, GameObject user)
         {
-            for (int i = 0; i < Slots.Length; i++)
-            {
-                if (!Slots[i].IsEmpty && Slots[i].Definition is T)
-                    return i;
-            }
-
-            return -1;
-        }
-
-        public ItemStack Take(int index)
-        {
-            if (!IsValid(index) || Slots[index].IsEmpty)
-                return ItemStack.Empty;
-
-            ItemStack stack = Slots[index];
-            Slots[index] = ItemStack.Empty;
-            Changed?.Invoke();
-            return stack;
-        }
-
-        public void Move(int from, int to)
-        {
-            if (!IsValid(from) || !IsValid(to) || from == to || Slots[from].IsEmpty)
-                return;
-
-            ItemStack source = Slots[from];
-            ItemStack target = Slots[to];
-
-            if (source.CanMerge(target) && target.FreeSpace > 0)
-            {
-                int moved = Mathf.Min(source.Count, target.FreeSpace);
-                Slots[to] = target.WithCount(target.Count + moved);
-                Slots[from] = source.WithCount(source.Count - moved);
-            }
-            else
-            {
-                Slots[to] = source;
-                Slots[from] = target;
-            }
-
-            Changed?.Invoke();
-        }
-
-        public bool Use(int index, GameObject user)
-        {
-            if (!IsValid(index) || Slots[index].IsEmpty)
+            if (!Contains(item) || !item.Definition.IsUsable || !item.Definition.Use(user))
                 return false;
 
-            ItemStack stack = Slots[index];
-            if (!stack.Definition.IsUsable || !stack.Definition.Use(user))
-                return false;
+            item.Count--;
+            if (item.Count <= 0)
+                Detach(item);
 
-            Slots[index] = stack.WithCount(stack.Count - 1);
             Changed?.Invoke();
             return true;
+        }
+
+        public bool Contains(InventoryItem item)
+        {
+            return item != null && ItemList.Contains(item);
         }
 
         private int AddSilently(ItemDefinition definition, int count)
@@ -138,32 +219,55 @@ namespace RUSH.Items
             if (definition == null || count <= 0)
                 return Mathf.Max(0, count);
 
-            for (int i = 0; i < Slots.Length && count > 0; i++)
+            foreach (InventoryItem item in ItemList)
             {
-                if (Slots[i].Definition != definition || Slots[i].FreeSpace <= 0)
+                if (count <= 0)
+                    break;
+
+                if (item.Definition != definition || !item.IsStackable || item.Count >= definition.MaxStack)
                     continue;
 
-                int added = Mathf.Min(Slots[i].FreeSpace, count);
-                Slots[i] = Slots[i].WithCount(Slots[i].Count + added);
+                int added = Mathf.Min(definition.MaxStack - item.Count, count);
+                item.Count += added;
                 count -= added;
             }
 
-            for (int i = 0; i < Slots.Length && count > 0; i++)
+            while (count > 0 && TryFindSpace(definition, out Vector2Int position, out bool rotated))
             {
-                if (!Slots[i].IsEmpty)
-                    continue;
-
                 int added = Mathf.Min(definition.MaxStack, count);
-                Slots[i] = new ItemStack(definition, added);
+                Insert(new InventoryItem(definition, added, null, position, rotated));
                 count -= added;
             }
 
             return count;
         }
 
-        private bool IsValid(int index)
+        private void Insert(InventoryItem item)
         {
-            return index >= 0 && index < Slots.Length;
+            ItemList.Add(item);
+            Occupy(item, item);
+        }
+
+        private void Detach(InventoryItem item)
+        {
+            Occupy(item, null);
+            ItemList.Remove(item);
+        }
+
+        private void Occupy(InventoryItem item, InventoryItem value)
+        {
+            InventoryItem[] grid = cells ?? Cells;
+            Vector2Int size = item.Size;
+            for (int y = item.Position.y; y < item.Position.y + size.y; y++)
+            {
+                for (int x = item.Position.x; x < item.Position.x + size.x; x++)
+                    grid[y * columns + x] = value;
+            }
+        }
+
+        private bool IsInside(Vector2Int cell)
+        {
+            return cell.x >= 0 && cell.y >= 0 && cell.x < columns && cell.y < rows;
         }
     }
 }

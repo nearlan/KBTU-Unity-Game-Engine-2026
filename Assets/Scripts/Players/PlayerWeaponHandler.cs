@@ -135,22 +135,65 @@ namespace RUSH.Players
 
         public void Drop(WeaponSlot slot)
         {
-            int index = (int)slot;
-            bool wasActive = index == activeSlot;
-            if (Release(index) == null)
+            Weapon weapon = TakeFromSlot((int)slot, true);
+            if (weapon == null)
                 return;
 
-            if (wasActive)
+            Throw(weapon);
+            WeaponsChanged?.Invoke();
+        }
+
+        public bool MoveToBackpack(WeaponSlot slot, Vector2Int position, bool rotated)
+        {
+            int index = (int)slot;
+            Weapon weapon = slots[index];
+            if (weapon == null || weapon.ItemDefinition == null || inventory == null)
+                return false;
+
+            if (!inventory.CanPlace(weapon.ItemDefinition.GetSize(rotated), position))
+                return false;
+
+            TakeFromSlot(index, true);
+            inventory.TryAddAt(weapon.ItemDefinition, weapon, position, rotated);
+            WeaponsChanged?.Invoke();
+            return true;
+        }
+
+        public bool EquipFromBackpack(InventoryItem item)
+        {
+            if (inventory == null || item == null || item.Instance is not Weapon weapon || !inventory.Contains(item))
+                return false;
+
+            int index = (int)weapon.Slot;
+            Weapon occupant = slots[index];
+            Vector2Int position = item.Position;
+            bool rotated = item.Rotated;
+
+            inventory.Remove(item);
+
+            if (occupant != null)
             {
-                int other = FindOccupiedSlot();
-                if (other >= 0)
+                if (!FindBackpackSpace(occupant.ItemDefinition, position, rotated, out Vector2Int spot, out bool spotRotated))
                 {
-                    activeSlot = other;
-                    Draw(slots[other], false);
+                    inventory.TryAddAt(item.Definition, weapon, position, rotated);
+                    return false;
                 }
+
+                TakeFromSlot(index, false);
+                inventory.TryAddAt(occupant.ItemDefinition, occupant, spot, spotRotated);
             }
 
-            WeaponsChanged?.Invoke();
+            PutInSlot(weapon, index, false);
+            return true;
+        }
+
+        public bool DropFromBackpack(InventoryItem item)
+        {
+            if (inventory == null || item == null || item.Instance is not Weapon weapon || !inventory.Remove(item))
+                return false;
+
+            Throw(weapon);
+            return true;
         }
 
         private void HandleSwitching()
@@ -257,37 +300,86 @@ namespace RUSH.Players
             Store(weapon, true);
         }
 
-        private void Store(Weapon weapon, bool inspect)
+        private bool Store(Weapon weapon, bool inspect)
         {
             int index = (int)weapon.Slot;
+            if (slots[index] == null)
+            {
+                weapon.Equip(gameObject, weaponSocket, equippedLayer);
+                PutInSlot(weapon, index, inspect);
+                return true;
+            }
 
-            Release(index);
-            Holster(CurrentWeapon);
+            if (inventory == null || weapon.ItemDefinition == null
+                || !inventory.TryFindSpace(weapon.ItemDefinition, out Vector2Int position, out bool rotated))
+                return false;
 
             weapon.Equip(gameObject, weaponSocket, equippedLayer);
+            weapon.gameObject.SetActive(false);
+            inventory.TryAddAt(weapon.ItemDefinition, weapon, position, rotated);
+            return true;
+        }
+
+        private void PutInSlot(Weapon weapon, int index, bool inspect)
+        {
+            Holster(CurrentWeapon);
             slots[index] = weapon;
             activeSlot = index;
             Draw(weapon, inspect);
             WeaponsChanged?.Invoke();
         }
 
-        private Weapon Release(int index)
+        private Weapon TakeFromSlot(int index, bool switchToOther)
         {
             Weapon weapon = slots[index];
             if (weapon == null)
                 return null;
 
             slots[index] = null;
-            if (index == activeSlot)
+            bool wasActive = index == activeSlot;
+            if (wasActive)
             {
                 ResetActionState();
                 arms.SetWeapon(null);
             }
 
+            weapon.gameObject.SetActive(false);
+
+            if (wasActive && switchToOther)
+            {
+                int other = FindOccupiedSlot();
+                if (other >= 0)
+                {
+                    activeSlot = other;
+                    Draw(slots[other], false);
+                }
+            }
+
+            return weapon;
+        }
+
+        private void Throw(Weapon weapon)
+        {
             weapon.gameObject.SetActive(true);
             Transform view = viewCamera.transform;
             weapon.Drop(view.TransformPoint(dropOffset), view.rotation, view.forward * throwSpeed, worldLayer);
-            return weapon;
+        }
+
+        private bool FindBackpackSpace(ItemDefinition definition, Vector2Int preferred, bool preferredRotated, out Vector2Int position, out bool rotated)
+        {
+            position = preferred;
+            rotated = preferredRotated;
+            if (definition == null)
+                return false;
+
+            if (inventory.CanPlace(definition.GetSize(rotated), position))
+                return true;
+
+            rotated = !preferredRotated;
+            if (inventory.CanPlace(definition.GetSize(rotated), position))
+                return true;
+
+            return inventory.TryFindSpace(definition, out position, out rotated);
         }
 
         private void Holster(Weapon weapon)

@@ -20,18 +20,25 @@ namespace RUSH.EditorTools
 
         private const float CellSize = 104f;
         private const float CellSpacing = 10f;
-        private const float WeaponSlotWidth = 380f;
-        private const float WeaponSlotHeight = 150f;
+        private const int WeaponSlotCells = 2;
+        private const float Margin = 60f;
+        private const float ColumnGap = 50f;
+        private const float ContentTop = 170f;
 
         private static readonly Color PanelColor = new(0.07f, 0.08f, 0.07f, 0.94f);
         private static readonly Color DimColor = new(0f, 0f, 0f, 0.55f);
-        private static readonly Color SlotColor = new(0.16f, 0.17f, 0.15f, 0.95f);
-        private static readonly Color HighlightColor = new(1f, 1f, 1f, 0.12f);
+        private static readonly Color CellColor = new(0.16f, 0.17f, 0.15f, 0.95f);
+        private static readonly Color ItemColor = new(0.3f, 0.31f, 0.27f, 0.97f);
+        private static readonly Color ValidColor = new(0.25f, 0.55f, 0.25f, 0.95f);
+        private static readonly Color InvalidColor = new(0.6f, 0.18f, 0.15f, 0.95f);
+        private static readonly Color HighlightColor = new(1f, 1f, 1f, 0.14f);
         private static readonly Color AccentColor = new(0.96f, 0.78f, 0.25f, 1f);
         private static readonly Color TextColor = new(0.92f, 0.9f, 0.85f, 1f);
         private static readonly Color MutedTextColor = new(0.92f, 0.9f, 0.85f, 0.55f);
 
-        private static readonly string[] WeaponSlotTitles = { "ОСНОВНОЕ", "ПИСТОЛЕТ" };
+        private static readonly string[] WeaponSlotTitles = { "АВТОМАТ", "ПИСТОЛЕТ" };
+
+        private static float Step => CellSize + CellSpacing;
 
         [MenuItem("Tools/RUSH/Build Inventory Window")]
         public static void BuildInPlayerPrefab()
@@ -74,52 +81,47 @@ namespace RUSH.EditorTools
             Image dim = CreateImage("Dim", window, null, DimColor);
             Stretch(dim.rectTransform);
 
-            float gridWidth = inventory.Columns * CellSize + (inventory.Columns - 1) * CellSpacing;
-            float gridHeight = inventory.Rows * CellSize + (inventory.Rows - 1) * CellSpacing;
-            float panelWidth = 60f + WeaponSlotWidth + 50f + gridWidth + 60f;
-            float contentHeight = Mathf.Max(gridHeight, 2f * WeaponSlotHeight + 20f);
-            float panelHeight = 170f + contentHeight + 60f;
+            float slotWidth = GridLength(WeaponSlotCells);
+            float gridWidth = GridLength(inventory.Columns);
+            float gridHeight = GridLength(inventory.Rows);
+            float slotsHeight = WeaponSlotTitles.Length * (36f + CellSize) + (WeaponSlotTitles.Length - 1) * 24f;
+            float panelWidth = Margin + slotWidth + ColumnGap + gridWidth + Margin;
+            float panelHeight = ContentTop + Mathf.Max(gridHeight, slotsHeight) + Margin;
 
             Image panel = CreateImage("Panel", window, LoadSprite("Box_Large_02"), PanelColor, 2f);
             panel.rectTransform.sizeDelta = new Vector2(panelWidth, panelHeight);
 
             TMP_Text title = CreateText("Title", panel.transform, "ИНВЕНТАРЬ", "Header", 54f, TextColor, TextAlignmentOptions.Left);
-            Place(title.rectTransform, new Vector2(60f, -40f), new Vector2(600f, 64f));
+            Place(title.rectTransform, new Vector2(Margin, -40f), new Vector2(600f, 64f));
 
             Image line = CreateImage("Divider", panel.transform, LoadSprite("Line_01"), AccentColor);
-            Place(line.rectTransform, new Vector2(60f, -108f), new Vector2(panelWidth - 120f, 6f));
+            Place(line.rectTransform, new Vector2(Margin, -108f), new Vector2(panelWidth - 2f * Margin, 6f));
 
-            TMP_Text weaponsLabel = CreateText("WeaponsLabel", panel.transform, "ОРУЖИЕ", "Bold", 26f, AccentColor, TextAlignmentOptions.Left);
-            Place(weaponsLabel.rectTransform, new Vector2(60f, -125f), new Vector2(WeaponSlotWidth, 36f));
+            InventoryItemView itemTemplate = CreateItemView("ItemTemplate", window);
+            itemTemplate.gameObject.SetActive(false);
 
-            InventorySlotView[] weaponSlots = new InventorySlotView[WeaponSlotTitles.Length];
-            for (int i = 0; i < weaponSlots.Length; i++)
+            InventoryGridView[] weaponGrids = new InventoryGridView[WeaponSlotTitles.Length];
+            float slotTop = ContentTop - 45f;
+            for (int i = 0; i < weaponGrids.Length; i++)
             {
-                weaponSlots[i] = CreateWeaponSlot(panel.transform, i);
-                Place((RectTransform)weaponSlots[i].transform, new Vector2(60f, -170f - i * (WeaponSlotHeight + 20f)), new Vector2(WeaponSlotWidth, WeaponSlotHeight));
+                TMP_Text slotTitle = CreateText($"{(WeaponSlot)i}Label", panel.transform, WeaponSlotTitles[i], "Bold", 26f, AccentColor, TextAlignmentOptions.Left);
+                Place(slotTitle.rectTransform, new Vector2(Margin, -slotTop), new Vector2(slotWidth, 36f));
+
+                weaponGrids[i] = CreateGrid($"WeaponSlot_{(WeaponSlot)i}", panel.transform, InventoryGridKind.WeaponSlot, (WeaponSlot)i, WeaponSlotCells, 1, itemTemplate, true);
+                Place((RectTransform)weaponGrids[i].transform, new Vector2(Margin, -(slotTop + 40f)), new Vector2(slotWidth, CellSize));
+
+                slotTop += 36f + CellSize + 24f + 4f;
             }
 
-            float gridLeft = 60f + WeaponSlotWidth + 50f;
+            float gridLeft = Margin + slotWidth + ColumnGap;
             TMP_Text backpackLabel = CreateText("BackpackLabel", panel.transform, "РЮКЗАК", "Bold", 26f, AccentColor, TextAlignmentOptions.Left);
-            Place(backpackLabel.rectTransform, new Vector2(gridLeft, -125f), new Vector2(gridWidth, 36f));
+            Place(backpackLabel.rectTransform, new Vector2(gridLeft, -(ContentTop - 45f)), new Vector2(gridWidth, 36f));
 
-            RectTransform grid = CreateRect("Grid", panel.transform);
-            Place(grid, new Vector2(gridLeft, -170f), new Vector2(gridWidth, gridHeight));
-            GridLayoutGroup layout = grid.gameObject.AddComponent<GridLayoutGroup>();
-            layout.cellSize = new Vector2(CellSize, CellSize);
-            layout.spacing = new Vector2(CellSpacing, CellSpacing);
-            layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            layout.constraintCount = inventory.Columns;
+            InventoryGridView backpack = CreateGrid("Backpack", panel.transform, InventoryGridKind.Backpack, WeaponSlot.Primary, inventory.Columns, inventory.Rows, itemTemplate, false);
+            Place((RectTransform)backpack.transform, new Vector2(gridLeft, -(ContentTop - 5f)), new Vector2(gridWidth, gridHeight));
 
-            InventorySlotView[] gridSlots = new InventorySlotView[inventory.Capacity];
-            for (int i = 0; i < gridSlots.Length; i++)
-                gridSlots[i] = CreateGridSlot(grid, i);
-
-            Image dragIcon = CreateImage("DragIcon", window, null, Color.white);
-            dragIcon.rectTransform.sizeDelta = new Vector2(CellSize * 0.85f, CellSize * 0.85f);
-            dragIcon.preserveAspect = true;
-            dragIcon.raycastTarget = false;
-            dragIcon.enabled = false;
+            InventoryItemView ghost = CreateItemView("DragGhost", window);
+            ghost.gameObject.SetActive(false);
 
             InventoryWindow view = window.gameObject.AddComponent<InventoryWindow>();
             SerializedObject so = new(view);
@@ -130,81 +132,92 @@ namespace RUSH.EditorTools
             so.FindProperty("weaponHandler").objectReferenceValue = Require<PlayerWeaponHandler>(playerRoot);
             so.FindProperty("look").objectReferenceValue = Require<PlayerLook>(playerRoot);
             so.FindProperty("panel").objectReferenceValue = panel.rectTransform;
-            so.FindProperty("dragIcon").objectReferenceValue = dragIcon;
-            SetArray(so.FindProperty("gridSlots"), gridSlots);
-            SetArray(so.FindProperty("weaponSlots"), weaponSlots);
+            so.FindProperty("backpackGrid").objectReferenceValue = backpack;
+            so.FindProperty("dragGhost").objectReferenceValue = ghost;
+            SetArray(so.FindProperty("weaponGrids"), weaponGrids);
             so.ApplyModifiedPropertiesWithoutUndo();
 
             return view;
         }
 
-        private static InventorySlotView CreateGridSlot(Transform parent, int index)
+        private static InventoryGridView CreateGrid(string name, Transform parent, InventoryGridKind kind, WeaponSlot slot,
+            int columns, int rows, InventoryItemView itemTemplate, bool withMarker)
         {
-            Image background = CreateImage($"Slot_{index:00}", parent, LoadSprite("Box_Medium_02"), SlotColor, 2.5f);
-            RectTransform slot = background.rectTransform;
+            Image hitArea = CreateImage(name, parent, null, Color.clear);
+            RectTransform grid = hitArea.rectTransform;
 
-            Image icon = CreateImage("Icon", slot, null, Color.white);
+            Image[] cells = new Image[columns * rows];
+            for (int i = 0; i < cells.Length; i++)
+            {
+                Image cell = CreateImage($"Cell_{i:00}", grid, LoadSprite("Box_Medium_02"), CellColor, 2.5f);
+                Place(cell.rectTransform, new Vector2(i % columns * Step, -(i / columns) * Step), new Vector2(CellSize, CellSize));
+                cells[i] = cell;
+            }
+
+            RectTransform items = CreateRect("Items", grid);
+            Stretch(items);
+
+            GameObject marker = null;
+            if (withMarker)
+            {
+                Image frame = CreateImage("Active", grid, LoadSprite("Frame_Large_06"), AccentColor, 2.5f);
+                Stretch(frame.rectTransform, -6f);
+                frame.raycastTarget = false;
+                frame.gameObject.SetActive(false);
+                marker = frame.gameObject;
+            }
+
+            InventoryGridView view = grid.gameObject.AddComponent<InventoryGridView>();
+            SerializedObject so = new(view);
+            so.FindProperty("kind").enumValueIndex = (int)kind;
+            so.FindProperty("weaponSlot").enumValueIndex = (int)slot;
+            so.FindProperty("columns").intValue = columns;
+            so.FindProperty("rows").intValue = rows;
+            so.FindProperty("cellSize").floatValue = CellSize;
+            so.FindProperty("spacing").floatValue = CellSpacing;
+            so.FindProperty("itemsRoot").objectReferenceValue = items;
+            so.FindProperty("itemTemplate").objectReferenceValue = itemTemplate;
+            so.FindProperty("activeMarker").objectReferenceValue = marker;
+            so.FindProperty("cellColor").colorValue = CellColor;
+            so.FindProperty("validColor").colorValue = ValidColor;
+            so.FindProperty("invalidColor").colorValue = InvalidColor;
+            SetArray(so.FindProperty("cells"), cells);
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return view;
+        }
+
+        private static InventoryItemView CreateItemView(string name, Transform parent)
+        {
+            RectTransform root = CreateRect(name, parent);
+            root.sizeDelta = new Vector2(CellSize, CellSize);
+
+            Image background = CreateImage("Background", root, LoadSprite("Box_Medium_02"), ItemColor, 2.5f);
+            Stretch(background.rectTransform);
+
+            Image icon = CreateImage("Icon", root, null, Color.white);
             icon.preserveAspect = true;
             icon.raycastTarget = false;
-            Stretch(icon.rectTransform, 12f);
 
-            TMP_Text count = CreateText("Count", slot, "", "Bold", 26f, TextColor, TextAlignmentOptions.BottomRight);
-            Stretch(count.rectTransform, 8f);
+            TMP_Text label = CreateText("Label", root, "", "Bold", 24f, TextColor, TextAlignmentOptions.BottomRight);
+            Stretch(label.rectTransform, 8f);
 
-            GameObject highlight = CreateFrame(slot, "Highlight", HighlightColor);
+            Image highlight = CreateImage("Highlight", root, LoadSprite("Box_Medium_02"), HighlightColor, 2.5f);
+            Stretch(highlight.rectTransform);
+            highlight.raycastTarget = false;
+            highlight.gameObject.SetActive(false);
 
-            return AddSlotView(slot, icon, count, highlight, null);
-        }
-
-        private static InventorySlotView CreateWeaponSlot(Transform parent, int index)
-        {
-            Image background = CreateImage($"WeaponSlot_{(WeaponSlot)index}", parent, LoadSprite("Box_Medium_02"), SlotColor, 2f);
-            RectTransform slot = background.rectTransform;
-            slot.anchorMin = slot.anchorMax = new Vector2(0f, 1f);
-            slot.pivot = new Vector2(0f, 1f);
-
-            TMP_Text title = CreateText("Title", slot, WeaponSlotTitles[index], "Bold", 22f, MutedTextColor, TextAlignmentOptions.TopLeft);
-            Stretch(title.rectTransform, 12f);
-
-            Image icon = CreateImage("Icon", slot, null, Color.white);
-            icon.preserveAspect = true;
-            icon.raycastTarget = false;
-            Stretch(icon.rectTransform, 22f);
-            icon.rectTransform.offsetMax = new Vector2(-40f, -34f);
-            icon.rectTransform.offsetMin = new Vector2(40f, 14f);
-
-            TMP_Text ammo = CreateText("Ammo", slot, "", "Bold", 24f, TextColor, TextAlignmentOptions.BottomRight);
-            Stretch(ammo.rectTransform, 12f);
-
-            GameObject highlight = CreateFrame(slot, "Highlight", HighlightColor);
-
-            Image marker = CreateImage("Active", slot, LoadSprite("Frame_Large_06"), AccentColor, 2.5f);
-            Stretch(marker.rectTransform, -4f);
-            marker.raycastTarget = false;
-            marker.gameObject.SetActive(false);
-
-            return AddSlotView(slot, icon, ammo, highlight, marker.gameObject);
-        }
-
-        private static GameObject CreateFrame(Transform parent, string name, Color color)
-        {
-            Image frame = CreateImage(name, parent, LoadSprite("Box_Medium_02"), color, 2.5f);
-            Stretch(frame.rectTransform);
-            frame.raycastTarget = false;
-            frame.gameObject.SetActive(false);
-            return frame.gameObject;
-        }
-
-        private static InventorySlotView AddSlotView(RectTransform slot, Image icon, TMP_Text count, GameObject highlight, GameObject marker)
-        {
-            InventorySlotView view = slot.gameObject.AddComponent<InventorySlotView>();
+            InventoryItemView view = root.gameObject.AddComponent<InventoryItemView>();
             SerializedObject so = new(view);
             so.FindProperty("icon").objectReferenceValue = icon;
-            so.FindProperty("countLabel").objectReferenceValue = count;
-            so.FindProperty("highlight").objectReferenceValue = highlight;
-            so.FindProperty("activeMarker").objectReferenceValue = marker;
+            so.FindProperty("label").objectReferenceValue = label;
+            so.FindProperty("highlight").objectReferenceValue = highlight.gameObject;
             so.ApplyModifiedPropertiesWithoutUndo();
             return view;
+        }
+
+        private static float GridLength(int cells)
+        {
+            return cells * CellSize + (cells - 1) * CellSpacing;
         }
 
         private static RectTransform CreateRect(string name, Transform parent)

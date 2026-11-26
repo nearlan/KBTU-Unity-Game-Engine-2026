@@ -772,6 +772,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RUSH.Weapons.Firearm
   slot: 0
+  itemDefinition: {fileID: 11400000, guid: 2592b999fbda5774cbe2c803d64fbb99, type: 2}
   armsController: {fileID: 22100000, guid: 1288116e5192cd84b808721e453eb7e7, type: 2}
   gripPosition: {x: 0.0000000064865735, y: 0.00000000100923, z: 0.000000013117384}
   gripRotation: {x: 0.7071068, y: 0.000000033141344, z: -0.000000010138381, w: 0.7071068}
