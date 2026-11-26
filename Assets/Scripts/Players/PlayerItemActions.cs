@@ -14,14 +14,14 @@ namespace RUSH.Players
 
         public Inventory Inventory => inventory;
 
-        public bool Use(InventoryItem item)
+        public bool Use(Inventory source, InventoryItem item)
         {
-            return inventory.Use(item, gameObject);
+            return source != null && source.Use(item, gameObject);
         }
 
-        public bool Drop(InventoryItem item)
+        public bool Drop(Inventory source, InventoryItem item)
         {
-            if (item == null || item.Instance != null || item.Definition.WorldPrefab == null || !inventory.Remove(item))
+            if (source == null || item == null || item.Instance != null || item.Definition.WorldPrefab == null || !source.Remove(item))
                 return false;
 
             Transform view = viewCamera.transform;

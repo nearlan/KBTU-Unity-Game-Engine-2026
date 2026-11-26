@@ -7,7 +7,6 @@ namespace RUSH.Weapons
     public abstract class Weapon : MonoBehaviour
     {
         [Header("Inventory")]
-        [SerializeField] private WeaponSlot slot = WeaponSlot.Primary;
         [SerializeField] private WeaponItemDefinition itemDefinition;
 
         [Header("Holding")]
@@ -38,7 +37,6 @@ namespace RUSH.Weapons
         public WeaponSounds Sounds => sounds;
         public WeaponRecoil Recoil => recoil;
         public Sprite HudIcon => hudIcon;
-        public WeaponSlot Slot => slot;
         public WeaponItemDefinition ItemDefinition => itemDefinition;
 
         public virtual AmmoDefinition AmmoType => null;

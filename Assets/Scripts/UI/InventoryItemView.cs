@@ -10,6 +10,7 @@ namespace RUSH.UI
         [SerializeField] private Image icon;
         [SerializeField] private TMP_Text label;
         [SerializeField] private GameObject highlight;
+        [SerializeField] private GameObject selectedMarker;
         [SerializeField, Min(0f)] private float iconPadding = 10f;
 
         private CanvasGroup canvasGroup;
@@ -18,7 +19,7 @@ namespace RUSH.UI
 
         private CanvasGroup Group => canvasGroup != null ? canvasGroup : canvasGroup = GetComponent<CanvasGroup>();
 
-        public void Show(Sprite sprite, string text, bool rotated, bool highlighted, float alpha = 1f)
+        public void Show(Sprite sprite, string text, bool rotated, bool highlighted, bool selected, float alpha = 1f)
         {
             icon.sprite = sprite;
             icon.enabled = sprite != null;
@@ -35,6 +36,9 @@ namespace RUSH.UI
 
             if (highlight != null)
                 highlight.SetActive(highlighted);
+
+            if (selectedMarker != null)
+                selectedMarker.SetActive(selected);
 
             Group.alpha = alpha;
         }

@@ -2,7 +2,6 @@ using RUSH.Core;
 using RUSH.Items;
 using RUSH.Players;
 using RUSH.UI;
-using RUSH.Weapons;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -20,7 +19,7 @@ namespace RUSH.EditorTools
 
         private const float CellSize = 104f;
         private const float CellSpacing = 10f;
-        private const int WeaponSlotCells = 2;
+        private const int HandColumns = 2;
         private const float Margin = 60f;
         private const float ColumnGap = 50f;
         private const float ContentTop = 170f;
@@ -36,7 +35,7 @@ namespace RUSH.EditorTools
         private static readonly Color TextColor = new(0.92f, 0.9f, 0.85f, 1f);
         private static readonly Color MutedTextColor = new(0.92f, 0.9f, 0.85f, 0.55f);
 
-        private static readonly string[] WeaponSlotTitles = { "АВТОМАТ", "ПИСТОЛЕТ" };
+        private static readonly string[] HandTitles = { "ОСНОВНОЕ", "ЗАПАСНОЕ" };
 
         private static float Step => CellSize + CellSpacing;
 
@@ -81,10 +80,10 @@ namespace RUSH.EditorTools
             Image dim = CreateImage("Dim", window, null, DimColor);
             Stretch(dim.rectTransform);
 
-            float slotWidth = GridLength(WeaponSlotCells);
+            float slotWidth = GridLength(HandColumns);
             float gridWidth = GridLength(inventory.Columns);
             float gridHeight = GridLength(inventory.Rows);
-            float slotsHeight = WeaponSlotTitles.Length * (36f + CellSize) + (WeaponSlotTitles.Length - 1) * 24f;
+            float slotsHeight = HandTitles.Length * (36f + CellSize) + (HandTitles.Length - 1) * 24f;
             float panelWidth = Margin + slotWidth + ColumnGap + gridWidth + Margin;
             float panelHeight = ContentTop + Mathf.Max(gridHeight, slotsHeight) + Margin;
 
@@ -100,15 +99,15 @@ namespace RUSH.EditorTools
             InventoryItemView itemTemplate = CreateItemView("ItemTemplate", window);
             itemTemplate.gameObject.SetActive(false);
 
-            InventoryGridView[] weaponGrids = new InventoryGridView[WeaponSlotTitles.Length];
+            InventoryGridView[] handGrids = new InventoryGridView[HandTitles.Length];
             float slotTop = ContentTop - 45f;
-            for (int i = 0; i < weaponGrids.Length; i++)
+            for (int i = 0; i < handGrids.Length; i++)
             {
-                TMP_Text slotTitle = CreateText($"{(WeaponSlot)i}Label", panel.transform, WeaponSlotTitles[i], "Bold", 26f, AccentColor, TextAlignmentOptions.Left);
+                TMP_Text slotTitle = CreateText($"Hands{i}Label", panel.transform, HandTitles[i], "Bold", 26f, AccentColor, TextAlignmentOptions.Left);
                 Place(slotTitle.rectTransform, new Vector2(Margin, -slotTop), new Vector2(slotWidth, 36f));
 
-                weaponGrids[i] = CreateGrid($"WeaponSlot_{(WeaponSlot)i}", panel.transform, InventoryGridKind.WeaponSlot, (WeaponSlot)i, WeaponSlotCells, 1, itemTemplate, true);
-                Place((RectTransform)weaponGrids[i].transform, new Vector2(Margin, -(slotTop + 40f)), new Vector2(slotWidth, CellSize));
+                handGrids[i] = CreateGrid($"Hands_{i}", panel.transform, InventoryGridKind.Hands, i, HandColumns, 1, itemTemplate);
+                Place((RectTransform)handGrids[i].transform, new Vector2(Margin, -(slotTop + 40f)), new Vector2(slotWidth, CellSize));
 
                 slotTop += 36f + CellSize + 24f + 4f;
             }
@@ -117,7 +116,7 @@ namespace RUSH.EditorTools
             TMP_Text backpackLabel = CreateText("BackpackLabel", panel.transform, "РЮКЗАК", "Bold", 26f, AccentColor, TextAlignmentOptions.Left);
             Place(backpackLabel.rectTransform, new Vector2(gridLeft, -(ContentTop - 45f)), new Vector2(gridWidth, 36f));
 
-            InventoryGridView backpack = CreateGrid("Backpack", panel.transform, InventoryGridKind.Backpack, WeaponSlot.Primary, inventory.Columns, inventory.Rows, itemTemplate, false);
+            InventoryGridView backpack = CreateGrid("Backpack", panel.transform, InventoryGridKind.Backpack, 0, inventory.Columns, inventory.Rows, itemTemplate);
             Place((RectTransform)backpack.transform, new Vector2(gridLeft, -(ContentTop - 5f)), new Vector2(gridWidth, gridHeight));
 
             InventoryItemView ghost = CreateItemView("DragGhost", window);
@@ -134,14 +133,14 @@ namespace RUSH.EditorTools
             so.FindProperty("panel").objectReferenceValue = panel.rectTransform;
             so.FindProperty("backpackGrid").objectReferenceValue = backpack;
             so.FindProperty("dragGhost").objectReferenceValue = ghost;
-            SetArray(so.FindProperty("weaponGrids"), weaponGrids);
+            SetArray(so.FindProperty("handGrids"), handGrids);
             so.ApplyModifiedPropertiesWithoutUndo();
 
             return view;
         }
 
-        private static InventoryGridView CreateGrid(string name, Transform parent, InventoryGridKind kind, WeaponSlot slot,
-            int columns, int rows, InventoryItemView itemTemplate, bool withMarker)
+        private static InventoryGridView CreateGrid(string name, Transform parent, InventoryGridKind kind, int rowOffset,
+            int columns, int rows, InventoryItemView itemTemplate)
         {
             Image hitArea = CreateImage(name, parent, null, Color.clear);
             RectTransform grid = hitArea.rectTransform;
@@ -157,27 +156,16 @@ namespace RUSH.EditorTools
             RectTransform items = CreateRect("Items", grid);
             Stretch(items);
 
-            GameObject marker = null;
-            if (withMarker)
-            {
-                Image frame = CreateImage("Active", grid, LoadSprite("Frame_Large_06"), AccentColor, 2.5f);
-                Stretch(frame.rectTransform, -6f);
-                frame.raycastTarget = false;
-                frame.gameObject.SetActive(false);
-                marker = frame.gameObject;
-            }
-
             InventoryGridView view = grid.gameObject.AddComponent<InventoryGridView>();
             SerializedObject so = new(view);
             so.FindProperty("kind").enumValueIndex = (int)kind;
-            so.FindProperty("weaponSlot").enumValueIndex = (int)slot;
+            so.FindProperty("rowOffset").intValue = rowOffset;
             so.FindProperty("columns").intValue = columns;
             so.FindProperty("rows").intValue = rows;
             so.FindProperty("cellSize").floatValue = CellSize;
             so.FindProperty("spacing").floatValue = CellSpacing;
             so.FindProperty("itemsRoot").objectReferenceValue = items;
             so.FindProperty("itemTemplate").objectReferenceValue = itemTemplate;
-            so.FindProperty("activeMarker").objectReferenceValue = marker;
             so.FindProperty("cellColor").colorValue = CellColor;
             so.FindProperty("validColor").colorValue = ValidColor;
             so.FindProperty("invalidColor").colorValue = InvalidColor;
@@ -206,11 +194,17 @@ namespace RUSH.EditorTools
             highlight.raycastTarget = false;
             highlight.gameObject.SetActive(false);
 
+            Image selected = CreateImage("Selected", root, LoadSprite("Frame_Large_06"), AccentColor, 2.5f);
+            Stretch(selected.rectTransform, -4f);
+            selected.raycastTarget = false;
+            selected.gameObject.SetActive(false);
+
             InventoryItemView view = root.gameObject.AddComponent<InventoryItemView>();
             SerializedObject so = new(view);
             so.FindProperty("icon").objectReferenceValue = icon;
             so.FindProperty("label").objectReferenceValue = label;
             so.FindProperty("highlight").objectReferenceValue = highlight.gameObject;
+            so.FindProperty("selectedMarker").objectReferenceValue = selected.gameObject;
             so.ApplyModifiedPropertiesWithoutUndo();
             return view;
         }

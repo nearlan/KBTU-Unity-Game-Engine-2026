@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using RUSH.Weapons;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -9,14 +8,14 @@ namespace RUSH.UI
     public enum InventoryGridKind
     {
         Backpack,
-        WeaponSlot
+        Hands
     }
 
     public class InventoryGridView : MonoBehaviour,
         IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         [SerializeField] private InventoryGridKind kind;
-        [SerializeField] private WeaponSlot weaponSlot;
+        [SerializeField, Min(0)] private int rowOffset;
         [SerializeField, Min(1)] private int columns = 1;
         [SerializeField, Min(1)] private int rows = 1;
         [SerializeField, Min(1f)] private float cellSize = 104f;
@@ -24,7 +23,6 @@ namespace RUSH.UI
         [SerializeField] private Image[] cells;
         [SerializeField] private RectTransform itemsRoot;
         [SerializeField] private InventoryItemView itemTemplate;
-        [SerializeField] private GameObject activeMarker;
 
         [Header("Colors")]
         [SerializeField] private Color cellColor = new(0.16f, 0.17f, 0.15f, 0.95f);
@@ -36,7 +34,7 @@ namespace RUSH.UI
         private int shownCount;
 
         public InventoryGridKind Kind => kind;
-        public WeaponSlot WeaponSlot => weaponSlot;
+        public int RowOffset => rowOffset;
         public int Columns => columns;
         public int Rows => rows;
         public float CellSize => cellSize;
@@ -77,7 +75,7 @@ namespace RUSH.UI
             shownCount = 0;
         }
 
-        public void AddItem(Sprite icon, Vector2Int position, Vector2Int size, bool rotated, string label, bool highlighted, float alpha)
+        public void AddItem(Sprite icon, Vector2Int position, Vector2Int size, bool rotated, string label, bool highlighted, bool selected, float alpha)
         {
             InventoryItemView view;
             if (shownCount < views.Count)
@@ -98,19 +96,13 @@ namespace RUSH.UI
             rect.pivot = new Vector2(0f, 1f);
             rect.anchoredPosition = new Vector2(position.x * Step, -position.y * Step);
             rect.sizeDelta = CellSizeFor(size);
-            view.Show(icon, label, rotated, highlighted, alpha);
+            view.Show(icon, label, rotated, highlighted, selected, alpha);
         }
 
         public void EndItems()
         {
             for (int i = shownCount; i < views.Count; i++)
                 views[i].gameObject.SetActive(false);
-        }
-
-        public void SetActiveMarker(bool active)
-        {
-            if (activeMarker != null)
-                activeMarker.SetActive(active);
         }
 
         public void ShowPreview(Vector2Int position, Vector2Int size, bool valid)

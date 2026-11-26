@@ -14,10 +14,8 @@ namespace RUSH.UI
         private enum DropAction
         {
             None,
-            Move,
+            Place,
             Merge,
-            ToBackpack,
-            ToSlot,
             World
         }
 
@@ -25,6 +23,7 @@ namespace RUSH.UI
         {
             public DropAction Action;
             public InventoryGridView Grid;
+            public Inventory Inventory;
             public Vector2Int Position;
             public Vector2Int Size;
             public bool Rotated;
@@ -42,7 +41,7 @@ namespace RUSH.UI
         [Header("View")]
         [SerializeField] private RectTransform panel;
         [SerializeField] private InventoryGridView backpackGrid;
-        [SerializeField] private InventoryGridView[] weaponGrids;
+        [SerializeField] private InventoryGridView[] handGrids;
         [SerializeField] private InventoryItemView dragGhost;
         [SerializeField, Range(0f, 1f)] private float draggedAlpha = 0.35f;
         [SerializeField, Range(0f, 1f)] private float ghostAlpha = 0.85f;
@@ -51,19 +50,18 @@ namespace RUSH.UI
         private CanvasGroup canvasGroup;
         private Vector2 pointer;
         private bool dirty = true;
-        private int weaponSignature;
-        private object hoveredObject;
+        private int ammoSignature;
+        private InventoryItem hoveredItem;
 
         private bool dragging;
-        private InventoryGridView dragSource;
+        private Inventory dragInventory;
         private InventoryItem dragItem;
-        private Weapon dragWeapon;
-        private ItemDefinition dragDefinition;
         private bool dragRotated;
         private Vector2Int dragGrab;
 
         public bool IsOpen { get; private set; }
 
+        private Inventory Hands => weaponHandler.Hands;
         private RectTransform Rect => (RectTransform)transform;
 
         private void Awake()
@@ -74,7 +72,7 @@ namespace RUSH.UI
             canvasGroup.blocksRaycasts = false;
 
             backpackGrid.Bind(this);
-            foreach (InventoryGridView grid in weaponGrids)
+            foreach (InventoryGridView grid in handGrids)
                 grid.Bind(this);
 
             if (dragGhost != null)
@@ -87,7 +85,8 @@ namespace RUSH.UI
         private void OnEnable()
         {
             inventory.Changed += MarkDirty;
-            weaponHandler.WeaponsChanged += MarkDirty;
+            Hands.Changed += MarkDirty;
+            weaponHandler.SelectionChanged += MarkDirty;
             owner.Died += HandleOwnerDied;
             MarkDirty();
         }
@@ -95,7 +94,8 @@ namespace RUSH.UI
         private void OnDisable()
         {
             inventory.Changed -= MarkDirty;
-            weaponHandler.WeaponsChanged -= MarkDirty;
+            Hands.Changed -= MarkDirty;
+            weaponHandler.SelectionChanged -= MarkDirty;
             owner.Died -= HandleOwnerDied;
             SetOpen(false);
         }
@@ -129,10 +129,10 @@ namespace RUSH.UI
                 UseAt(grid, cell);
             }
 
-            int signature = ComputeWeaponSignature();
-            if (signature != weaponSignature)
+            int signature = ComputeAmmoSignature();
+            if (signature != ammoSignature)
             {
-                weaponSignature = signature;
+                ammoSignature = signature;
                 dirty = true;
             }
 
@@ -154,7 +154,7 @@ namespace RUSH.UI
             if (!open)
                 CancelDrag();
 
-            hoveredObject = null;
+            hoveredItem = null;
             Refresh();
         }
 
@@ -169,35 +169,17 @@ namespace RUSH.UI
             if (!IsOpen || dragging || eventData.button != PointerEventData.InputButton.Left)
                 return;
 
-            Vector2Int cell = grid.ScreenToCell(eventData.position);
-
-            if (grid.Kind == InventoryGridKind.Backpack)
-            {
-                InventoryItem item = inventory.GetAt(cell);
-                if (item == null)
-                    return;
-
-                dragItem = item;
-                dragWeapon = item.Instance as Weapon;
-                dragDefinition = item.Definition;
-                dragRotated = item.Rotated;
-                dragGrab = cell - item.Position;
-            }
-            else
-            {
-                Weapon weapon = SlotWeaponAt(grid, cell);
-                if (weapon == null)
-                    return;
-
-                dragItem = null;
-                dragWeapon = weapon;
-                dragDefinition = weapon.ItemDefinition;
-                dragRotated = false;
-                dragGrab = new Vector2Int(Mathf.Clamp(cell.x, 0, WeaponSize(weapon).x - 1), 0);
-            }
+            Inventory source = InventoryOf(grid);
+            Vector2Int cell = ToInventoryCell(grid, grid.ScreenToCell(eventData.position));
+            InventoryItem item = source.GetAt(cell);
+            if (item == null)
+                return;
 
             dragging = true;
-            dragSource = grid;
+            dragInventory = source;
+            dragItem = item;
+            dragRotated = item.Rotated;
+            dragGrab = cell - item.Position;
             pointer = eventData.position;
             ShowGhost();
             dirty = true;
@@ -216,45 +198,22 @@ namespace RUSH.UI
 
             pointer = eventData.position;
             DropTarget target = EvaluateDrop();
-            InventoryGridView source = dragSource;
+            Inventory source = dragInventory;
             InventoryItem item = dragItem;
             CancelDrag();
 
-            if (target.Action != DropAction.World && !target.Valid)
-                return;
-
             switch (target.Action)
             {
-                case DropAction.Move:
-                    inventory.TryMove(item, target.Position, target.Rotated);
+                case DropAction.Place when target.Valid:
+                    Inventory.TryTransfer(source, item, target.Inventory, target.Position, target.Rotated);
                     break;
                 case DropAction.Merge:
-                    inventory.TryMerge(item, target.MergeTarget);
-                    break;
-                case DropAction.ToBackpack:
-                    weaponHandler.MoveToBackpack(source.WeaponSlot, target.Position, target.Rotated);
-                    break;
-                case DropAction.ToSlot:
-                    weaponHandler.EquipFromBackpack(item);
+                    Inventory.TryMerge(source, item, target.Inventory, target.MergeTarget);
                     break;
                 case DropAction.World:
-                    DropToWorld(source, item);
+                    weaponHandler.DropItem(source, item);
                     break;
             }
-        }
-
-        private void DropToWorld(InventoryGridView source, InventoryItem item)
-        {
-            if (source.Kind == InventoryGridKind.WeaponSlot)
-            {
-                weaponHandler.Drop(source.WeaponSlot);
-                return;
-            }
-
-            if (item.Instance is Weapon)
-                weaponHandler.DropFromBackpack(item);
-            else
-                itemActions.Drop(item);
         }
 
         private DropTarget EvaluateDrop()
@@ -266,76 +225,61 @@ namespace RUSH.UI
                 return new DropTarget { Action = insidePanel ? DropAction.None : DropAction.World };
             }
 
-            if (grid.Kind == InventoryGridKind.Backpack)
+            Inventory target = InventoryOf(grid);
+            Vector2Int cell = ToInventoryCell(grid, grid.ScreenToCell(pointer));
+            InventoryItem occupant = target.GetAt(cell);
+
+            if (dragItem.CanMergeInto(occupant))
             {
-                if (dragDefinition == null)
-                    return new DropTarget { Action = DropAction.None };
-
-                Vector2Int cell = grid.ScreenToCell(pointer);
-                InventoryItem occupant = inventory.GetAt(cell);
-                if (dragItem != null && dragItem.CanMergeInto(occupant))
-                {
-                    return new DropTarget
-                    {
-                        Action = DropAction.Merge, Grid = grid, Position = occupant.Position,
-                        Size = occupant.Size, Valid = true, MergeTarget = occupant
-                    };
-                }
-
-                Vector2Int size = dragDefinition.GetSize(dragRotated);
-                Vector2Int position = cell - dragGrab;
                 return new DropTarget
                 {
-                    Action = dragItem != null ? DropAction.Move : DropAction.ToBackpack,
-                    Grid = grid,
-                    Position = position,
-                    Size = size,
-                    Rotated = dragRotated,
-                    Valid = inventory.CanPlace(size, position, dragItem)
+                    Action = DropAction.Merge, Grid = grid, Inventory = target, Position = occupant.Position,
+                    Size = occupant.Size, Valid = true, MergeTarget = occupant
                 };
             }
 
-            if (dragItem == null)
-                return new DropTarget { Action = DropAction.None };
+            bool rotated = target.AllowRotation && dragRotated;
+            Vector2Int size = dragItem.Definition.GetSize(rotated);
+            Vector2Int grab = rotated == dragRotated ? dragGrab : new Vector2Int(dragGrab.y, dragGrab.x);
+            grab = Vector2Int.Min(Vector2Int.Max(grab, Vector2Int.zero), size - Vector2Int.one);
+            Vector2Int position = cell - grab;
 
-            bool fits = dragWeapon != null && dragWeapon.Slot == grid.WeaponSlot;
-            Vector2Int slotSize = dragDefinition != null ? dragDefinition.Size : Vector2Int.one;
+            InventoryItem ignore = target == dragInventory ? dragItem : null;
             return new DropTarget
             {
-                Action = DropAction.ToSlot,
+                Action = DropAction.Place,
                 Grid = grid,
-                Position = Vector2Int.zero,
-                Size = Vector2Int.Min(slotSize, new Vector2Int(grid.Columns, grid.Rows)),
-                Valid = fits
+                Inventory = target,
+                Position = position,
+                Size = size,
+                Rotated = rotated,
+                Valid = target.CanPlace(size, position, ignore)
             };
         }
 
         private void UseAt(InventoryGridView grid, Vector2Int cell)
         {
-            if (grid.Kind == InventoryGridKind.WeaponSlot)
-            {
-                if (SlotWeaponAt(grid, cell) != null)
-                    weaponHandler.Select(grid.WeaponSlot);
-                return;
-            }
-
-            InventoryItem item = inventory.GetAt(cell);
+            Inventory source = InventoryOf(grid);
+            InventoryItem item = source.GetAt(ToInventoryCell(grid, cell));
             if (item == null)
                 return;
 
-            if (item.Instance is Weapon)
-                weaponHandler.EquipFromBackpack(item);
+            if (item.Definition.IsUsable)
+                itemActions.Use(source, item);
+            else if (source == Hands)
+                weaponHandler.Select(item);
             else
-                itemActions.Use(item);
+                weaponHandler.MoveToHands(source, item);
         }
 
         private void RotateDrag()
         {
-            if (dragDefinition == null || dragDefinition.Size.x == dragDefinition.Size.y)
+            Vector2Int size = dragItem.Definition.Size;
+            if (size.x == size.y)
                 return;
 
             dragRotated = !dragRotated;
-            Vector2Int rotatedSize = dragDefinition.GetSize(dragRotated);
+            Vector2Int rotatedSize = dragItem.Definition.GetSize(dragRotated);
             dragGrab = new Vector2Int(
                 Mathf.Clamp(dragGrab.y, 0, rotatedSize.x - 1),
                 Mathf.Clamp(dragGrab.x, 0, rotatedSize.y - 1));
@@ -344,13 +288,21 @@ namespace RUSH.UI
 
         private void UpdateDragPreview()
         {
-            backpackGrid.ClearPreview();
-            foreach (InventoryGridView grid in weaponGrids)
-                grid.ClearPreview();
+            ClearPreviews();
 
             DropTarget target = EvaluateDrop();
-            if (target.Grid != null && target.Action != DropAction.None)
-                target.Grid.ShowPreview(target.Position, target.Size, target.Valid);
+            if (target.Grid == null || target.Action == DropAction.None)
+                return;
+
+            Vector2Int offset = new(0, target.Grid.RowOffset);
+            target.Grid.ShowPreview(target.Position - offset, target.Size, target.Valid);
+        }
+
+        private void ClearPreviews()
+        {
+            backpackGrid.ClearPreview();
+            foreach (InventoryGridView grid in handGrids)
+                grid.ClearPreview();
         }
 
         private void ShowGhost()
@@ -358,14 +310,13 @@ namespace RUSH.UI
             if (dragGhost == null)
                 return;
 
-            Vector2Int size = dragDefinition != null ? dragDefinition.GetSize(dragRotated) : Vector2Int.one;
             RectTransform rect = dragGhost.Rect;
             rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.pivot = new Vector2(0f, 1f);
-            rect.sizeDelta = backpackGrid.CellSizeFor(size);
+            rect.sizeDelta = backpackGrid.CellSizeFor(dragItem.Definition.GetSize(dragRotated));
             dragGhost.gameObject.SetActive(true);
             dragGhost.transform.SetAsLastSibling();
-            dragGhost.Show(DragIcon(), string.Empty, dragRotated, false, ghostAlpha);
+            dragGhost.Show(IconOf(dragItem), string.Empty, dragRotated, false, false, ghostAlpha);
             MoveGhost();
         }
 
@@ -380,46 +331,30 @@ namespace RUSH.UI
             dragGhost.Rect.anchoredPosition = local + new Vector2(-(dragGrab.x * step + half), dragGrab.y * step + half);
         }
 
-        private Sprite DragIcon()
-        {
-            if (dragDefinition != null && dragDefinition.Icon != null)
-                return dragDefinition.Icon;
-            return dragWeapon != null ? dragWeapon.HudIcon : null;
-        }
-
         private void CancelDrag()
         {
             dragging = false;
-            dragSource = null;
+            dragInventory = null;
             dragItem = null;
-            dragWeapon = null;
-            dragDefinition = null;
             dragRotated = false;
 
             if (dragGhost != null)
                 dragGhost.gameObject.SetActive(false);
 
-            backpackGrid.ClearPreview();
-            foreach (InventoryGridView grid in weaponGrids)
-                grid.ClearPreview();
-
+            ClearPreviews();
             dirty = true;
         }
 
         private void UpdateHover()
         {
-            object current = null;
+            InventoryItem current = null;
             if (!dragging && TryGetHovered(out InventoryGridView grid, out Vector2Int cell))
-            {
-                current = grid.Kind == InventoryGridKind.Backpack
-                    ? inventory.GetAt(cell)
-                    : SlotWeaponAt(grid, cell);
-            }
+                current = InventoryOf(grid).GetAt(ToInventoryCell(grid, cell));
 
-            if (ReferenceEquals(current, hoveredObject))
+            if (current == hoveredItem)
                 return;
 
-            hoveredObject = current;
+            hoveredItem = current;
             dirty = true;
         }
 
@@ -435,7 +370,7 @@ namespace RUSH.UI
             if (backpackGrid.Contains(screenPoint))
                 return backpackGrid;
 
-            foreach (InventoryGridView grid in weaponGrids)
+            foreach (InventoryGridView grid in handGrids)
             {
                 if (grid.Contains(screenPoint))
                     return grid;
@@ -444,19 +379,14 @@ namespace RUSH.UI
             return null;
         }
 
-        private Weapon SlotWeaponAt(InventoryGridView grid, Vector2Int cell)
+        private Inventory InventoryOf(InventoryGridView grid)
         {
-            Weapon weapon = weaponHandler.GetWeapon(grid.WeaponSlot);
-            if (weapon == null)
-                return null;
-
-            Vector2Int size = WeaponSize(weapon);
-            return cell.x >= 0 && cell.y >= 0 && cell.x < size.x && cell.y < size.y ? weapon : null;
+            return grid.Kind == InventoryGridKind.Hands ? Hands : inventory;
         }
 
-        private static Vector2Int WeaponSize(Weapon weapon)
+        private static Vector2Int ToInventoryCell(InventoryGridView grid, Vector2Int cell)
         {
-            return weapon.ItemDefinition != null ? weapon.ItemDefinition.Size : Vector2Int.one;
+            return cell + new Vector2Int(0, grid.RowOffset);
         }
 
         private void Refresh()
@@ -465,47 +395,49 @@ namespace RUSH.UI
 
             backpackGrid.BeginItems();
             foreach (InventoryItem item in inventory.Items)
-            {
-                float alpha = item == dragItem ? draggedAlpha : 1f;
-                bool highlighted = hoveredObject == item;
-                backpackGrid.AddItem(item.Definition.Icon, item.Position, item.Size, item.Rotated, LabelFor(item), highlighted, alpha);
-            }
+                AddItemView(backpackGrid, item, item.Position);
             backpackGrid.EndItems();
 
-            foreach (InventoryGridView grid in weaponGrids)
+            foreach (InventoryGridView grid in handGrids)
             {
-                Weapon weapon = weaponHandler.GetWeapon(grid.WeaponSlot);
                 grid.BeginItems();
-                if (weapon != null)
+                foreach (InventoryItem item in Hands.Items)
                 {
-                    float alpha = dragging && dragItem == null && dragWeapon == weapon ? draggedAlpha : 1f;
-                    Sprite icon = weapon.ItemDefinition != null && weapon.ItemDefinition.Icon != null ? weapon.ItemDefinition.Icon : weapon.HudIcon;
-                    grid.AddItem(icon, Vector2Int.zero, WeaponSize(weapon), false, AmmoLabel(weapon), ReferenceEquals(hoveredObject, weapon), alpha);
+                    if (item.Position.y == grid.RowOffset)
+                        AddItemView(grid, item, item.Position - new Vector2Int(0, grid.RowOffset));
                 }
                 grid.EndItems();
-                grid.SetActiveMarker(weapon != null && weaponHandler.ActiveSlot == grid.WeaponSlot);
             }
+        }
+
+        private void AddItemView(InventoryGridView grid, InventoryItem item, Vector2Int position)
+        {
+            float alpha = item == dragItem ? draggedAlpha : 1f;
+            bool selected = item == weaponHandler.SelectedItem;
+            grid.AddItem(IconOf(item), position, item.Size, item.Rotated, LabelFor(item), item == hoveredItem, selected, alpha);
+        }
+
+        private static Sprite IconOf(InventoryItem item)
+        {
+            if (item.Definition.Icon != null)
+                return item.Definition.Icon;
+            return item.Instance is Weapon weapon ? weapon.HudIcon : null;
         }
 
         private static string LabelFor(InventoryItem item)
         {
-            if (item.Instance is Weapon weapon)
-                return AmmoLabel(weapon);
+            if (item.Instance is Firearm firearm)
+                return $"{firearm.Ammunition}/{firearm.MagazineSize}";
 
             return item.Definition.MaxStack > 1 ? item.Count.ToString() : string.Empty;
         }
 
-        private static string AmmoLabel(Weapon weapon)
+        private int ComputeAmmoSignature()
         {
-            return weapon is Firearm firearm ? $"{firearm.Ammunition}/{firearm.MagazineSize}" : string.Empty;
-        }
-
-        private int ComputeWeaponSignature()
-        {
-            int signature = (int)weaponHandler.ActiveSlot;
-            for (int i = 0; i < weaponGrids.Length; i++)
+            int signature = 17;
+            foreach (InventoryItem item in Hands.Items)
             {
-                if (weaponHandler.GetWeapon(weaponGrids[i].WeaponSlot) is Firearm firearm)
+                if (item.Instance is Firearm firearm)
                     signature = signature * 31 + firearm.Ammunition + 1;
             }
 

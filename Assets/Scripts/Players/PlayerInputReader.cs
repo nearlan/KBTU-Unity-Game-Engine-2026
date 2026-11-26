@@ -15,8 +15,7 @@ namespace RUSH.Players
         private const string SprintAction = "Sprint";
         private const string JumpAction = "Jump";
         private const string CrouchAction = "Crouch";
-        private const string PrimaryWeaponAction = "PrimaryWeapon";
-        private const string SecondaryWeaponAction = "SecondaryWeapon";
+        private static readonly string[] HandActions = { "Hand1", "Hand2", "Hand3", "Hand4" };
         private const string CycleWeaponAction = "CycleWeapon";
         private const string InventoryAction = "Inventory";
         private const string RotateItemAction = "RotateItem";
@@ -35,8 +34,7 @@ namespace RUSH.Players
         private InputAction sprint;
         private InputAction jump;
         private InputAction crouch;
-        private InputAction primaryWeapon;
-        private InputAction secondaryWeapon;
+        private InputAction[] hands;
         private InputAction cycleWeapon;
         private InputAction inventory;
         private InputAction rotateItem;
@@ -54,8 +52,7 @@ namespace RUSH.Players
         public bool JumpPressed => jump.WasPressedThisFrame();
         public bool CrouchPressed => crouch.WasPressedThisFrame();
         public bool CrouchHeld => crouch.IsPressed();
-        public bool PrimaryWeaponPressed => primaryWeapon.WasPressedThisFrame();
-        public bool SecondaryWeaponPressed => secondaryWeapon.WasPressedThisFrame();
+        public int HandSlotCount => hands.Length;
         public float CycleWeapon => cycleWeapon.ReadValue<float>();
         public bool InventoryPressed => inventory.WasPressedThisFrame();
         public bool RotateItemPressed => rotateItem.WasPressedThisFrame();
@@ -75,11 +72,17 @@ namespace RUSH.Players
             sprint = actionMap.FindAction(SprintAction, true);
             jump = actionMap.FindAction(JumpAction, true);
             crouch = actionMap.FindAction(CrouchAction, true);
-            primaryWeapon = actionMap.FindAction(PrimaryWeaponAction, true);
-            secondaryWeapon = actionMap.FindAction(SecondaryWeaponAction, true);
+            hands = new InputAction[HandActions.Length];
+            for (int i = 0; i < hands.Length; i++)
+                hands[i] = actionMap.FindAction(HandActions[i], true);
             cycleWeapon = actionMap.FindAction(CycleWeaponAction, true);
             inventory = actionMap.FindAction(InventoryAction, true);
             rotateItem = actionMap.FindAction(RotateItemAction, true);
+        }
+
+        public bool HandSlotPressed(int index)
+        {
+            return index >= 0 && index < hands.Length && hands[index].WasPressedThisFrame();
         }
 
         private void OnEnable()

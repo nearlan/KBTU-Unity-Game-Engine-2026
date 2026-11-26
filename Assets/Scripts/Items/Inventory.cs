@@ -8,6 +8,8 @@ namespace RUSH.Items
     {
         [SerializeField, Min(1)] private int columns = 5;
         [SerializeField, Min(1)] private int rows = 4;
+        [SerializeField] private bool allowRotation = true;
+        [SerializeField] private bool singleRowItems;
         [SerializeField] private ItemStack[] startingItems = Array.Empty<ItemStack>();
 
         [NonSerialized] private List<InventoryItem> items;
@@ -17,6 +19,7 @@ namespace RUSH.Items
 
         public int Columns => columns;
         public int Rows => rows;
+        public bool AllowRotation => allowRotation;
         public IReadOnlyList<InventoryItem> Items => ItemList;
 
         private List<InventoryItem> ItemList => items ??= new List<InventoryItem>();
@@ -54,6 +57,9 @@ namespace RUSH.Items
             if (position.x < 0 || position.y < 0 || position.x + size.x > columns || position.y + size.y > rows)
                 return false;
 
+            if (singleRowItems && size.y > 1)
+                return false;
+
             for (int y = position.y; y < position.y + size.y; y++)
             {
                 for (int x = position.x; x < position.x + size.x; x++)
@@ -73,7 +79,7 @@ namespace RUSH.Items
             {
                 rotated = pass == 1;
                 Vector2Int size = definition.GetSize(rotated);
-                if (rotated && size == definition.Size)
+                if (rotated && (!allowRotation || size == definition.Size))
                     break;
 
                 for (int y = 0; y < rows; y++)
@@ -100,12 +106,12 @@ namespace RUSH.Items
             return left;
         }
 
-        public bool TryAddAt(ItemDefinition definition, Component instance, Vector2Int position, bool rotated)
+        public bool TryAddAt(ItemDefinition definition, Component instance, Vector2Int position, bool rotated, int count = 1)
         {
-            if (definition == null || !CanPlace(definition.GetSize(rotated), position))
+            if (definition == null || count <= 0 || rotated && !allowRotation || !CanPlace(definition.GetSize(rotated), position))
                 return false;
 
-            Insert(new InventoryItem(definition, 1, instance, position, rotated));
+            Insert(new InventoryItem(definition, count, instance, position, rotated));
             Changed?.Invoke();
             return true;
         }
@@ -119,7 +125,7 @@ namespace RUSH.Items
 
         public bool TryMove(InventoryItem item, Vector2Int position, bool rotated)
         {
-            if (!Contains(item) || !CanPlace(item.Definition.GetSize(rotated), position, item))
+            if (!Contains(item) || rotated && !allowRotation || !CanPlace(item.Definition.GetSize(rotated), position, item))
                 return false;
 
             Occupy(item, null);
@@ -132,7 +138,12 @@ namespace RUSH.Items
 
         public bool TryMerge(InventoryItem source, InventoryItem target)
         {
-            if (!Contains(source) || !Contains(target) || !source.CanMergeInto(target))
+            return TryMerge(this, source, this, target);
+        }
+
+        public static bool TryMerge(Inventory from, InventoryItem source, Inventory to, InventoryItem target)
+        {
+            if (from == null || to == null || !from.Contains(source) || !to.Contains(target) || !source.CanMergeInto(target))
                 return false;
 
             int moved = Mathf.Min(source.Count, target.Definition.MaxStack - target.Count);
@@ -140,10 +151,27 @@ namespace RUSH.Items
             source.Count -= moved;
 
             if (source.Count <= 0)
-                Detach(source);
+                from.Detach(source);
 
-            Changed?.Invoke();
+            from.Changed?.Invoke();
+            if (to != from)
+                to.Changed?.Invoke();
             return true;
+        }
+
+        public static bool TryTransfer(Inventory from, InventoryItem item, Inventory to, Vector2Int position, bool rotated)
+        {
+            if (from == null || to == null || !from.Contains(item))
+                return false;
+
+            if (from == to)
+                return from.TryMove(item, position, rotated);
+
+            if (rotated && !to.allowRotation || !to.CanPlace(item.Definition.GetSize(rotated), position))
+                return false;
+
+            from.Remove(item);
+            return to.TryAddAt(item.Definition, item.Instance, position, rotated, item.Count);
         }
 
         public bool Remove(InventoryItem item)
