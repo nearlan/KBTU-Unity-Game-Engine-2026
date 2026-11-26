@@ -130,15 +130,6 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
-                },
-                {
-                    "name": "Heal",
-                    "type": "Button",
-                    "id": "bee3c676-57fa-4a1b-b86c-f894eb663b9b",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -392,17 +383,6 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "Inventory",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "d2cbeb2e-e4f1-45f8-b580-16d025da2432",
-                    "path": "<Keyboard>/h",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Heal",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

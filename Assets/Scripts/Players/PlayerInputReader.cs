@@ -19,7 +19,6 @@ namespace RUSH.Players
         private const string SecondaryWeaponAction = "SecondaryWeapon";
         private const string CycleWeaponAction = "CycleWeapon";
         private const string InventoryAction = "Inventory";
-        private const string HealAction = "Heal";
 
         [SerializeField] private InputActionAsset actions;
         [SerializeField] private string actionMapName = "Player";
@@ -39,7 +38,6 @@ namespace RUSH.Players
         private InputAction secondaryWeapon;
         private InputAction cycleWeapon;
         private InputAction inventory;
-        private InputAction heal;
 
         public Vector2 Move => move.ReadValue<Vector2>();
         public Vector2 Look => look.ReadValue<Vector2>();
@@ -58,7 +56,6 @@ namespace RUSH.Players
         public bool SecondaryWeaponPressed => secondaryWeapon.WasPressedThisFrame();
         public float CycleWeapon => cycleWeapon.ReadValue<float>();
         public bool InventoryPressed => inventory.WasPressedThisFrame();
-        public bool HealPressed => heal.WasPressedThisFrame();
 
         private void Awake()
         {
@@ -79,7 +76,6 @@ namespace RUSH.Players
             secondaryWeapon = actionMap.FindAction(SecondaryWeaponAction, true);
             cycleWeapon = actionMap.FindAction(CycleWeaponAction, true);
             inventory = actionMap.FindAction(InventoryAction, true);
-            heal = actionMap.FindAction(HealAction, true);
         }
 
         private void OnEnable()

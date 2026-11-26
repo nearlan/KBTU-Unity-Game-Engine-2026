@@ -61,9 +61,17 @@ namespace RUSH.UI
             SetIconAlpha(dragged ? draggedIconAlpha : 1f);
         }
 
-        public void OnPointerEnter(PointerEventData eventData) => SetHighlighted(true);
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            SetHighlighted(true);
+            window.HandleHover(this, true);
+        }
 
-        public void OnPointerExit(PointerEventData eventData) => SetHighlighted(false);
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            SetHighlighted(false);
+            window.HandleHover(this, false);
+        }
 
         public void OnPointerClick(PointerEventData eventData) => window.HandleClick(this, eventData);
 

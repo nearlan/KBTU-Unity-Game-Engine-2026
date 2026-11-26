@@ -27,6 +27,7 @@ namespace RUSH.UI
 
         private CanvasGroup canvasGroup;
         private InventorySlotView dragSource;
+        private InventorySlotView hovered;
         private bool dropHandled;
 
         public bool IsOpen { get; private set; }
@@ -72,6 +73,9 @@ namespace RUSH.UI
             if (input.InventoryPressed && !owner.IsDead)
                 SetOpen(!IsOpen);
 
+            if (IsOpen && hovered != null && input.InteractPressed)
+                UseSlot(hovered);
+
             if (IsOpen)
                 RefreshWeapons();
 
@@ -91,16 +95,30 @@ namespace RUSH.UI
             weaponHandler.InputBlocked = open;
 
             if (!open)
+            {
                 CancelDrag();
+                hovered = null;
+            }
 
             Refresh();
         }
 
         public void HandleClick(InventorySlotView slot, PointerEventData eventData)
         {
-            if (!IsOpen || eventData.button != PointerEventData.InputButton.Right)
-                return;
+            if (IsOpen && eventData.button == PointerEventData.InputButton.Right)
+                UseSlot(slot);
+        }
 
+        public void HandleHover(InventorySlotView slot, bool entered)
+        {
+            if (entered)
+                hovered = slot;
+            else if (hovered == slot)
+                hovered = null;
+        }
+
+        private void UseSlot(InventorySlotView slot)
+        {
             if (slot.Kind == InventorySlotKind.Grid)
                 itemActions.Use(slot.Index);
             else

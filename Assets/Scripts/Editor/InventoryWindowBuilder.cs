@@ -31,7 +31,7 @@ namespace RUSH.EditorTools
         private static readonly Color TextColor = new(0.92f, 0.9f, 0.85f, 1f);
         private static readonly Color MutedTextColor = new(0.92f, 0.9f, 0.85f, 0.55f);
 
-        private static readonly string[] WeaponSlotTitles = { "1   ОСНОВНОЕ", "2   ПИСТОЛЕТ" };
+        private static readonly string[] WeaponSlotTitles = { "ОСНОВНОЕ", "ПИСТОЛЕТ" };
 
         [MenuItem("Tools/RUSH/Build Inventory Window")]
         public static void BuildInPlayerPrefab()
@@ -78,7 +78,7 @@ namespace RUSH.EditorTools
             float gridHeight = inventory.Rows * CellSize + (inventory.Rows - 1) * CellSpacing;
             float panelWidth = 60f + WeaponSlotWidth + 50f + gridWidth + 60f;
             float contentHeight = Mathf.Max(gridHeight, 2f * WeaponSlotHeight + 20f);
-            float panelHeight = 170f + contentHeight + 100f;
+            float panelHeight = 170f + contentHeight + 60f;
 
             Image panel = CreateImage("Panel", window, LoadSprite("Box_Large_02"), PanelColor, 2f);
             panel.rectTransform.sizeDelta = new Vector2(panelWidth, panelHeight);
@@ -114,11 +114,6 @@ namespace RUSH.EditorTools
             InventorySlotView[] gridSlots = new InventorySlotView[inventory.Capacity];
             for (int i = 0; i < gridSlots.Length; i++)
                 gridSlots[i] = CreateGridSlot(grid, i);
-
-            TMP_Text hint = CreateText("Hint", panel.transform,
-                "ЛКМ — перетащить    ПКМ — использовать / выбрать    За окно — выбросить    H — аптечка    Tab — закрыть",
-                "Body", 22f, MutedTextColor, TextAlignmentOptions.Left);
-            Place(hint.rectTransform, new Vector2(60f, -(170f + contentHeight + 35f)), new Vector2(panelWidth - 120f, 34f));
 
             Image dragIcon = CreateImage("DragIcon", window, null, Color.white);
             dragIcon.rectTransform.sizeDelta = new Vector2(CellSize * 0.85f, CellSize * 0.85f);

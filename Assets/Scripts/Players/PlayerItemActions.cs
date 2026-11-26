@@ -5,7 +5,6 @@ namespace RUSH.Players
 {
     public class PlayerItemActions : MonoBehaviour
     {
-        [SerializeField] private PlayerInputReader input;
         [SerializeField] private Inventory inventory;
         [SerializeField] private Camera viewCamera;
 
@@ -14,17 +13,6 @@ namespace RUSH.Players
         [SerializeField] private Vector3 dropOffset = new(0f, -0.2f, 0.8f);
 
         public Inventory Inventory => inventory;
-
-        private void Update()
-        {
-            if (input.HealPressed)
-                UseFirst<HealingItemDefinition>();
-        }
-
-        public bool UseFirst<T>() where T : ItemDefinition
-        {
-            return inventory.Use(inventory.IndexOf<T>(), gameObject);
-        }
 
         public bool Use(int index)
         {
