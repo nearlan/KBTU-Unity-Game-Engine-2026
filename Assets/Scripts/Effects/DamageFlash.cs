@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace KBTU.Effects
+namespace RUSH.Effects
 {
     public class DamageFlash : MonoBehaviour
     {

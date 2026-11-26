@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace KBTU.Weapons
+namespace RUSH.Weapons
 {
     public class MuzzleFlash : MonoBehaviour
     {

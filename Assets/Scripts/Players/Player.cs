@@ -1,9 +1,10 @@
 using System.Collections;
-using KBTU.Core;
+using RUSH.Core;
+using RUSH.Weapons;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace KBTU.Players
+namespace RUSH.Players
 {
     [RequireComponent(typeof(PlayerMovement), typeof(PlayerLook), typeof(PlayerWeaponHandler))]
     public class Player : Entity
@@ -23,6 +24,16 @@ namespace KBTU.Players
             weapons = GetComponent<PlayerWeaponHandler>();
         }
 
+        private void OnEnable()
+        {
+            weapons.Fired += HandleWeaponFired;
+        }
+
+        private void OnDisable()
+        {
+            weapons.Fired -= HandleWeaponFired;
+        }
+
         private void Update()
         {
             bool isAiming = weapons.IsAiming;
@@ -31,6 +42,11 @@ namespace KBTU.Players
             movement.SprintBlocked = isAiming || weapons.IsBusy || weapons.IsFiring;
             look.SetAiming(isAiming);
             arms.UpdateLocomotion(movement.MoveAmount, movement.IsSprinting, isAiming);
+        }
+
+        private void HandleWeaponFired(Weapon weapon)
+        {
+            look.AddRecoil(weapon.Recoil.EvaluateKick(weapons.IsAiming, movement.IsCrouching));
         }
 
         protected override void Die(DamageInfo killingBlow)

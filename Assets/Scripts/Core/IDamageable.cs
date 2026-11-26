@@ -1,4 +1,4 @@
-namespace KBTU.Core
+namespace RUSH.Core
 {
     public interface IDamageable
     {

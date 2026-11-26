@@ -1,8 +1,9 @@
-using KBTU.Core;
-using KBTU.Effects;
+using RUSH.Core;
+using RUSH.Effects;
+using RUSH.Items;
 using UnityEngine;
 
-namespace KBTU.Weapons
+namespace RUSH.Weapons
 {
     public class Firearm : Weapon
     {
@@ -20,6 +21,7 @@ namespace KBTU.Weapons
 
         [Header("Ammunition")]
         [SerializeField, Min(1)] private int magazineSize = 30;
+        [SerializeField] private AmmoDefinition ammoType;
 
         [Header("Effects")]
         [SerializeField] private MuzzleFlash muzzleFlash;
@@ -39,6 +41,8 @@ namespace KBTU.Weapons
         public override bool IsReadyToFire => Time.time - lastShotTime >= 60f / roundsPerMinute;
         public override bool HasAmmunition => Ammunition > 0;
         public override bool CanReload => Ammunition < magazineSize;
+        public override AmmoDefinition AmmoType => ammoType;
+        public override int MissingRounds => magazineSize - Ammunition;
 
         protected override void Awake()
         {
@@ -73,9 +77,9 @@ namespace KBTU.Weapons
             PlayAnimation(HasAmmunition ? ReloadState : ReloadEmptyState);
         }
 
-        public override void FillAmmunition()
+        public override void FillAmmunition(int rounds)
         {
-            Ammunition = magazineSize;
+            Ammunition = Mathf.Clamp(Ammunition + rounds, 0, magazineSize);
         }
 
         public override void EjectCasing()

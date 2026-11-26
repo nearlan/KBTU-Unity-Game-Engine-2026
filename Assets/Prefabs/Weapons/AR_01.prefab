@@ -615,7 +615,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 53a84174d27f2ee4b97a060523cb63cc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KBTU.Weapons.MuzzleFlash
+  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Weapons.MuzzleFlash
   particlesPrefab: {fileID: 1778426596711909015, guid: 00ce255d333c57947940079d4f049784, type: 3}
   particleCount: 5
   lightPrefab: {fileID: 5648082319180079035, guid: 76038177f833cd549908984de5e74c45, type: 3}
@@ -770,7 +770,9 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: acd1d7154d201e040992bfde43d2ee26, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KBTU.Weapons.Firearm
+  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Weapons.Firearm
+  slot: 0
+  itemDefinition: {fileID: 11400000, guid: 2592b999fbda5774cbe2c803d64fbb99, type: 2}
   armsController: {fileID: 22100000, guid: 1288116e5192cd84b808721e453eb7e7, type: 2}
   gripPosition: {x: 0.0000000064865735, y: 0.00000000100923, z: 0.000000013117384}
   gripRotation: {x: 0.7071068, y: 0.000000033141344, z: -0.000000010138381, w: 0.7071068}
@@ -783,6 +785,12 @@ MonoBehaviour:
     reloadEmpty: {fileID: 8300000, guid: 1fe5c2e1733f354428fe88c1a7cbafe4, type: 3}
     fire: {fileID: 8300000, guid: 0addcc409a57b4a43b86a3d2310ac5b4, type: 3}
     fireEmpty: {fileID: 8300000, guid: 0c187ee2790c74c4e9985aa1ee1a12d5, type: 3}
+  recoil:
+    vertical: 1.5
+    horizontal: 0.7
+    aimMultiplier: 0.6
+    crouchMultiplier: 0.75
+  hudIcon: {fileID: 21300000, guid: b4b6ed7980bc4524991e10d8befc7504, type: 3}
   automatic: 1
   roundsPerMinute: 610
   damage: 20
@@ -792,6 +800,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294966779
   magazineSize: 30
+  ammoType: {fileID: 11400000, guid: 6f7a806a1bffea341a974e42053f4efd, type: 2}
   muzzleFlash: {fileID: 9051615927957336391}
   ejectionSocket: {fileID: 5112156960990282297}
   casingPrefab: {fileID: 8423404798803720143, guid: 7b84b255a43ccf845b2f07f31618ac51, type: 3}
