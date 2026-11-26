@@ -28,12 +28,24 @@ namespace RUSH.Players
         private Vector2 targetRecoil;
         private Vector2 currentRecoil;
         private float recoilReturnCooldown;
+        private bool inputBlocked;
 
         public Camera ViewCamera => viewCamera;
 
+        public bool InputBlocked
+        {
+            get => inputBlocked;
+            set
+            {
+                inputBlocked = value;
+                if (isActiveAndEnabled)
+                    SetCursorLocked(!value);
+            }
+        }
+
         private void OnEnable()
         {
-            SetCursorLocked(true);
+            SetCursorLocked(!inputBlocked);
         }
 
         private void OnDisable()
@@ -49,7 +61,7 @@ namespace RUSH.Players
         private void Update()
         {
             float deltaTime = Time.deltaTime;
-            Vector2 delta = input.Look * sensitivity;
+            Vector2 delta = inputBlocked ? Vector2.zero : input.Look * sensitivity;
 
             transform.Rotate(0f, delta.x, 0f, Space.Self);
             delta.y += AbsorbRecoilCompensation(delta.y);
@@ -85,9 +97,6 @@ namespace RUSH.Players
             currentRecoil = Vector2.Lerp(currentRecoil, targetRecoil, 1f - Mathf.Exp(-recoilSnappiness * deltaTime));
         }
 
-        // Pulling the mouse down against vertical recoil eats into the accumulated kick,
-        // so the later return does not drag the view below where the player compensated to.
-        // Returns the part of the vertical mouse delta consumed by the recoil.
         private float AbsorbRecoilCompensation(float verticalDelta)
         {
             if (verticalDelta >= 0f || targetRecoil.x <= 0f)

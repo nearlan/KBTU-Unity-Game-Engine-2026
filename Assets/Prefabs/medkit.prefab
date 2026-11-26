@@ -77,7 +77,10 @@ PrefabInstance:
       addedObject: {fileID: 5047344086790818443}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ca00fa2b8bf3444b38bc8406232a7824, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 9045861773496746291}
+      addedObject: {fileID: 5088916602374750515}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ca00fa2b8bf3444b38bc8406232a7824, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8762256970603271973}
   m_SourcePrefab: {fileID: 100100000, guid: ca00fa2b8bf3444b38bc8406232a7824, type: 3}
 --- !u!1 &3816842618292401853 stripped
 GameObject:
@@ -103,9 +106,9 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.032, y: 0.055, z: 0.055}
-  m_Center: {x: 6.427071e-10, y: -7.246855e-10, z: 0.0042307274}
---- !u!114 &9045861773496746291
+  m_Size: {x: 0.012088525, y: 0.03235521, z: 0.028461453}
+  m_Center: {x: 0, y: 0, z: 0.0042307265}
+--- !u!114 &5088916602374750515
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -114,10 +117,37 @@ MonoBehaviour:
   m_GameObject: {fileID: 3816842618292401853}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b96886664b5cf49c2804945ce1fb0612, type: 3}
+  m_Script: {fileID: 11500000, guid: 16e66fc5a59facc4b8b1c813fd49e9d8, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Items.Medkit
-  healAmount: 35
-  requireMissingHealth: 1
-  useClip: {fileID: 0}
-  useVolume: 0.8
+  m_EditorClassIdentifier: Assembly-CSharp::RUSH.Items.ItemPickup
+  definition: {fileID: 11400000, guid: 33a88b35285a64444b1c37b155779ff7, type: 2}
+  count: 1
+  pickupClip: {fileID: 0}
+  pickupVolume: 0.8
+--- !u!54 &8762256970603271973
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3816842618292401853}
+  serializedVersion: 5
+  m_Mass: 0.5
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 0
+  m_CollisionDetection: 2
